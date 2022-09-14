@@ -1,0 +1,7 @@
+.scenariosList {
+    display: flex;
+}
+
+.addScenario {
+    margin-top: 32px;
+}

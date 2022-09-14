@@ -1,0 +1,16 @@
+.scenario {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+    padding: 10px 15px 10px 35px;
+    border: 1px solid black;
+    margin-right: 10px;
+}
+
+.operationIcon {
+    display: block;
+    font-size: 20px;
+    color: #aaaaaa;
+    padding: 10px;
+}

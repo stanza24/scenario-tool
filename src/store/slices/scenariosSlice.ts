@@ -1,0 +1,78 @@
+import { v4 as uuidV4 } from 'uuid';
+import { GetState } from 'zustand';
+
+import { RootStore, StoreSet } from '../index';
+import { IScenario, IOperation } from '../../types';
+
+export interface ScenariosSlice {
+  scenarios: IScenario[];
+  addScenario: () => void;
+  updateScenario: (scenario: IScenario) => void;
+  deleteScenario: (scenarioId: string) => void;
+  addOperation: (scenarioId: string) => void;
+  updateOperation: (scenarioId: string, operation: IOperation) => void;
+  deleteOperation: (scenarioId: string, operationId: string) => void;
+}
+
+export const createScenariosSlice = (
+  set: StoreSet,
+  get: GetState<RootStore>
+): ScenariosSlice => ({
+  scenarios: [],
+  addScenario: () => {
+    set((state) => {
+      state.scenarios.push({
+        id: uuidV4(),
+        init: null,
+        operations: [],
+      });
+    });
+  },
+  updateScenario: (scenario) => {
+    set((state) => {
+      const index = state.scenarios.findIndex((sc) => sc.id === scenario.id);
+      state.scenarios[index] = scenario;
+    });
+  },
+  deleteScenario: (scenarioId: string) => {
+    set((state) => {
+      const index = state.scenarios.findIndex((sc) => sc.id === scenarioId);
+      state.scenarios = [
+        ...state.scenarios.slice(0, index),
+        ...state.scenarios.slice(index + 1),
+      ];
+    });
+  },
+  addOperation: (scenarioId: string) => {
+    set((state) => {
+      const scIndex = state.scenarios.findIndex((sc) => sc.id === scenarioId);
+
+      state.scenarios[scIndex].operations.push({
+        id: uuidV4(),
+        name: '',
+        rate: null,
+      });
+    });
+  },
+  updateOperation: (scenarioId, operation) => {
+    set((state) => {
+      const scIndex = state.scenarios.findIndex((sc) => sc.id === scenarioId);
+      const opIndex = state.scenarios[scIndex].operations.findIndex(
+        (tr: IOperation) => tr.id === operation.id
+      );
+      state.scenarios[scIndex].operations[opIndex] = operation;
+    });
+  },
+  deleteOperation: (scenarioId: string, operationId: string) => {
+    set((state) => {
+      const scIndex = state.scenarios.findIndex((sc) => sc.id === scenarioId);
+      const opIndex = state.scenarios[scIndex].operations.findIndex(
+        (tr: IOperation) => tr.id === operationId
+      );
+      state.scenarios[scIndex].operations = [
+        ...state.scenarios[scIndex].operations.slice(0, opIndex),
+        ...state.scenarios[scIndex].operations.slice(opIndex + 1),
+      ];
+    });
+  },
+});
