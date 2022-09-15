@@ -2,8 +2,9 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import shallow from 'zustand/shallow';
 
 import { ScenarioOperation } from './ScenarioOperation';
-import { useStore } from '../store';
-import { IScenario, IOperation, IOperationWithResult } from '../types';
+import { useStore } from 'store';
+import { IOperation, IOperationWithResult, IScenario } from 'types';
+import { calculateResultWithRate } from 'utils';
 
 import { ArrowDownOutlined } from '@ant-design/icons';
 import { Button, Input, Modal } from 'antd';
@@ -41,8 +42,11 @@ export const Scenario = ({ scenario }: Props) => {
     for (let op of scenario.operations) {
       ops.push({
         ...op,
-        result:
-          (ops.at(-1)?.result || scenario.init || 0) * (Number(op.rate) || 1),
+        result: calculateResultWithRate(
+          op.rateType,
+          op.rate,
+          ops.at(-1)?.result || scenario.init || 0
+        ),
       });
     }
 

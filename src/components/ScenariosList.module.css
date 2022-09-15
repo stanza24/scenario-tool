@@ -1,5 +1,6 @@
 .scenariosList {
     display: flex;
+    margin-top: 10px;
 }
 
 .addScenario {

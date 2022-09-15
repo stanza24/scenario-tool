@@ -18,8 +18,10 @@
     width: 100%;
 }
 
-.rateInput {
+.rateInputGroup {
     width: 60% !important;
+    display: flex !important;
+    flex-wrap: nowrap;
 }
 
 .deleteButton {

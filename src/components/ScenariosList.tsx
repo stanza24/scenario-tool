@@ -1,8 +1,8 @@
 import shallow from 'zustand/shallow';
 
 import { Scenario } from './Scenario';
-import { useStore } from '../store';
-import { IScenario } from '../types';
+import { useStore } from 'store';
+import { IScenario } from 'types';
 
 import { Button } from 'antd';
 

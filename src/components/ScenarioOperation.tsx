@@ -1,9 +1,9 @@
 import { ChangeEvent, useState } from 'react';
 
-import { IOperation, IOperationWithResult } from '../types';
+import { ERateType, IOperation, IOperationWithResult } from 'types';
 
 import { ArrowDownOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import { Button, Input, Modal, Typography } from 'antd';
+import { Button, Input, Modal, Select, Typography } from 'antd';
 
 import styles from './ScenarioOperation.module.css';
 
@@ -27,6 +27,13 @@ export const ScenarioOperation = ({
       name: value || '',
     });
 
+  const handleChangeRateType = (rateType: ERateType) => {
+    updateOperation({
+      ...operation,
+      rateType,
+    });
+  };
+
   const handleChangeRate = ({
     target: { value },
   }: ChangeEvent<HTMLInputElement>) => {
@@ -37,10 +44,45 @@ export const ScenarioOperation = ({
   };
 
   const handleFixDecimals = () => {
+    let rate = '1';
+    switch (operation.rateType) {
+      case ERateType.MUL:
+      case ERateType.DIV:
+        rate = String(Number(Number(operation.rate).toFixed(3)));
+        break;
+      case ERateType.ADD_PERC:
+      case ERateType.SUB_PERC:
+        rate = String(Number(Number(operation.rate).toFixed(3)));
+    }
+
     updateOperation({
       ...operation,
-      rate: String(Number(operation.rate)),
+      rate,
     });
+  };
+
+  const getRatePlaceholder = () => {
+    switch (operation.rateType) {
+      case ERateType.MUL:
+      case ERateType.DIV:
+        return 'Enter value';
+      case ERateType.ADD_PERC:
+      case ERateType.SUB_PERC:
+        return 'Enter percent';
+    }
+    return '';
+  };
+
+  const getRateStep = () => {
+    switch (operation.rateType) {
+      case ERateType.MUL:
+      case ERateType.DIV:
+        return '0.001';
+      case ERateType.ADD_PERC:
+      case ERateType.SUB_PERC:
+        return '0.01';
+    }
+    return '1';
   };
 
   return (
@@ -57,24 +99,30 @@ export const ScenarioOperation = ({
         ellipsis={{
           rows: 1,
           expandable: false,
-          tooltip: operation.name || 'Action',
+          tooltip: operation.name || 'Operation',
         }}
         level={5}
         className={styles.operationName}
       >
-        {operation.name || 'Action'}
+        {operation.name || 'Operation'}
       </Typography.Title>
       <div className={styles.inputRow}>
-        <Input
-          step="0.0001"
-          type="number"
-          placeholder="Enter rate"
-          prefix="x"
-          value={operation.rate!}
-          onChange={handleChangeRate}
-          onBlur={handleFixDecimals}
-          className={styles.rateInput}
-        />
+        <Input.Group compact className={styles.rateInputGroup}>
+          <Select value={operation.rateType} onChange={handleChangeRateType}>
+            <Select.Option value={ERateType.MUL}>x</Select.Option>
+            <Select.Option value={ERateType.DIV}>/</Select.Option>
+            <Select.Option value={ERateType.ADD_PERC}>+%</Select.Option>
+            <Select.Option value={ERateType.SUB_PERC}>-%</Select.Option>
+          </Select>
+          <Input
+            step={getRateStep()}
+            type="number"
+            placeholder={getRatePlaceholder()}
+            value={operation.rate!}
+            onChange={handleChangeRate}
+            onBlur={handleFixDecimals}
+          />
+        </Input.Group>
         <Typography.Text className={styles.result}>
           = {operation.result.toFixed(0)}
         </Typography.Text>

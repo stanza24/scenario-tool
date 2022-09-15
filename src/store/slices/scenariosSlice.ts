@@ -1,11 +1,12 @@
 import { v4 as uuidV4 } from 'uuid';
 import { GetState } from 'zustand';
 
-import { RootStore, StoreSet } from '../index';
-import { IScenario, IOperation } from '../../types';
+import { RootStore, StoreSet } from '../';
+import { ERateType, IOperation, IScenario } from 'types';
 
 export interface ScenariosSlice {
   scenarios: IScenario[];
+  clearScenarios: () => void;
   addScenario: () => void;
   updateScenario: (scenario: IScenario) => void;
   deleteScenario: (scenarioId: string) => void;
@@ -19,6 +20,11 @@ export const createScenariosSlice = (
   get: GetState<RootStore>
 ): ScenariosSlice => ({
   scenarios: [],
+  clearScenarios: () => {
+    set((state) => {
+      state.scenarios = [];
+    });
+  },
   addScenario: () => {
     set((state) => {
       state.scenarios.push({
@@ -50,7 +56,8 @@ export const createScenariosSlice = (
       state.scenarios[scIndex].operations.push({
         id: uuidV4(),
         name: '',
-        rate: null,
+        rate: '1',
+        rateType: ERateType.MUL,
       });
     });
   },
