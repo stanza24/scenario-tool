@@ -48,11 +48,11 @@ export const ScenarioOperation = ({
     switch (operation.rateType) {
       case ERateType.MUL:
       case ERateType.DIV:
-        rate = String(Number(Number(operation.rate).toFixed(3)));
+        rate = parseFloat((+operation.rate).toFixed(3)).toString();
         break;
       case ERateType.ADD_PERC:
       case ERateType.SUB_PERC:
-        rate = String(Number(Number(operation.rate).toFixed(3)));
+        rate = parseFloat((+operation.rate).toFixed(3)).toString();
     }
 
     updateOperation({
