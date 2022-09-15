@@ -58,7 +58,7 @@ export const Scenario = ({ scenario }: Props) => {
   }: ChangeEvent<HTMLInputElement>) =>
     updateScenario({
       ...scenario,
-      init: value || '0',
+      init: value || '',
     });
 
   const handleAddOperation = (): void => addOperation(scenario.id);
