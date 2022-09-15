@@ -2,9 +2,9 @@ import { ERateType } from 'types';
 
 export const calculateResultWithRate = (
   rateType: ERateType,
-  rate: string | null,
+  rate: string,
   num: number
-) => {
+): number => {
   switch (rateType) {
     case ERateType.MUL:
       return num * (Number(rate) || 1);

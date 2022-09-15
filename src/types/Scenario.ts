@@ -8,7 +8,7 @@ export enum ERateType {
 export interface IOperation {
   id: string;
   name: string;
-  rate: string | null;
+  rate: string;
   rateType: ERateType;
 }
 
@@ -18,6 +18,6 @@ export interface IOperationWithResult extends IOperation {
 
 export interface IScenario {
   id: string;
-  init: number | null;
+  init: string;
   operations: IOperation[];
 }

@@ -29,7 +29,7 @@ export const createScenariosSlice = (
     set((state) => {
       state.scenarios.push({
         id: uuidV4(),
-        init: null,
+        init: '0',
         operations: [],
       });
     });

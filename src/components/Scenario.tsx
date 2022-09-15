@@ -7,7 +7,7 @@ import { IOperation, IOperationWithResult, IScenario } from 'types';
 import { calculateResultWithRate } from 'utils';
 
 import { ArrowDownOutlined } from '@ant-design/icons';
-import { Button, Input, Modal } from 'antd';
+import { Button, Divider, Input, Modal } from 'antd';
 
 import styles from './Scenario.module.css';
 
@@ -45,7 +45,7 @@ export const Scenario = ({ scenario }: Props) => {
         result: calculateResultWithRate(
           op.rateType,
           op.rate,
-          ops.at(-1)?.result || scenario.init || 0
+          ops.at(-1)?.result || Number(scenario.init) || 0
         ),
       });
     }
@@ -58,7 +58,7 @@ export const Scenario = ({ scenario }: Props) => {
   }: ChangeEvent<HTMLInputElement>) =>
     updateScenario({
       ...scenario,
-      init: value ? Number(value) : null,
+      init: value || '0',
     });
 
   const handleAddOperation = (): void => addOperation(scenario.id);
@@ -77,17 +77,29 @@ export const Scenario = ({ scenario }: Props) => {
     [scenario.id, updateOperation]
   );
 
+  const handleFixDecimals = () => {
+    updateScenario({
+      ...scenario,
+      init: String(Number(Number(scenario.init).toFixed(2))),
+    });
+  };
+
   return (
     <div className={styles.scenario}>
-      <Button type="text" onClick={() => setDeleteScenarioModalVisible(true)}>
-        x
+      <Button
+        onClick={() => setDeleteScenarioModalVisible(true)}
+        className={styles.scenarioButton}
+      >
+        Delete scenario
       </Button>
+      <Divider />
       <Input
         type="number"
         step="0.01"
         placeholder="Enter input value"
         value={scenario.init!}
         onChange={handleChangeInit}
+        onBlur={handleFixDecimals}
       />
       <ArrowDownOutlined className={styles.operationIcon} />
       {operationsWithResult.map((operation) => (
@@ -98,7 +110,9 @@ export const Scenario = ({ scenario }: Props) => {
           updateOperation={handleUpdateOperation}
         />
       ))}
-      <Button onClick={handleAddOperation}>+</Button>
+      <Button onClick={handleAddOperation} className={styles.scenarioButton}>
+        Add operation
+      </Button>
       <Modal
         open={deleteScenarioModalVisible}
         onCancel={() => setDeleteScenarioModalVisible(false)}
