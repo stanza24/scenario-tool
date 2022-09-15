@@ -41,12 +41,13 @@ export const Scenario = ({ scenario }: Props) => {
     for (let op of scenario.operations) {
       ops.push({
         ...op,
-        result: (ops.at(-1)?.result || scenario.init || 0) * (op.rate || 1),
+        result:
+          (ops.at(-1)?.result || scenario.init || 0) * (Number(op.rate) || 1),
       });
     }
 
     return ops;
-  }, [scenario.operations]);
+  }, [scenario.operations, scenario.init]);
 
   const handleChangeInit = ({
     target: { value },
@@ -78,6 +79,8 @@ export const Scenario = ({ scenario }: Props) => {
         x
       </Button>
       <Input
+        type="number"
+        step="0.01"
         placeholder="Enter input value"
         value={scenario.init!}
         onChange={handleChangeInit}
@@ -85,6 +88,7 @@ export const Scenario = ({ scenario }: Props) => {
       <ArrowDownOutlined className={styles.operationIcon} />
       {operationsWithResult.map((operation) => (
         <ScenarioOperation
+          key={operation.id}
           operation={operation}
           deleteOperation={handleDeleteOperation}
           updateOperation={handleUpdateOperation}

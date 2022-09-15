@@ -11,6 +11,6 @@
 .operationIcon {
     display: block;
     font-size: 20px;
-    color: #aaaaaa;
+    color: #999999 !important;
     padding: 10px;
 }

@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Scenarios tool",
+  "name": "Scenarios tool for arbitrage",
   "icons": [
     {
       "src": "favicon.ico",

@@ -19,7 +19,7 @@
 }
 
 .rateInput {
-    width: 50%;
+    width: 60% !important;
 }
 
 .deleteButton {
@@ -32,6 +32,6 @@
 .operationIcon {
     display: block;
     font-size: 20px;
-    color: #aaaaaa;
+    color: #999999 !important;
     padding: 10px;
 }

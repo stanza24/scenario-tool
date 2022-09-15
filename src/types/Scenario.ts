@@ -1,7 +1,7 @@
 export interface IOperation {
   id: string;
   name: string;
-  rate: number | null;
+  rate: string | null;
 }
 
 export interface IOperationWithResult extends IOperation {

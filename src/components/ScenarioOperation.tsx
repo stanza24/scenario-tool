@@ -29,11 +29,19 @@ export const ScenarioOperation = ({
 
   const handleChangeRate = ({
     target: { value },
-  }: ChangeEvent<HTMLInputElement>) =>
+  }: ChangeEvent<HTMLInputElement>) => {
     updateOperation({
       ...operation,
-      rate: value ? Number(value) : 0,
+      rate: value ?? 1,
     });
+  };
+
+  const handleFixDecimals = () => {
+    updateOperation({
+      ...operation,
+      rate: String(Number(operation.rate)),
+    });
+  };
 
   return (
     <div className={styles.scenarioOperation}>
@@ -58,15 +66,17 @@ export const ScenarioOperation = ({
       </Typography.Title>
       <div className={styles.inputRow}>
         <Input
+          step="0.0001"
           type="number"
           placeholder="Enter rate"
           prefix="x"
           value={operation.rate!}
           onChange={handleChangeRate}
+          onBlur={handleFixDecimals}
           className={styles.rateInput}
         />
         <Typography.Text className={styles.result}>
-          = {operation.result}
+          = {operation.result.toFixed(0)}
         </Typography.Text>
       </div>
       <ArrowDownOutlined className={styles.operationIcon} />
