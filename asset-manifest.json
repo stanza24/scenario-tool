@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/scenario-tool/static/css/main.ec04773d.css",
+    "main.css": "/scenario-tool/static/css/main.38382351.css",
     "main.js": "/scenario-tool/static/js/main.b3729d6e.js",
     "index.html": "/scenario-tool/index.html",
-    "main.ec04773d.css.map": "/scenario-tool/static/css/main.ec04773d.css.map",
+    "main.38382351.css.map": "/scenario-tool/static/css/main.38382351.css.map",
     "main.b3729d6e.js.map": "/scenario-tool/static/js/main.b3729d6e.js.map"
   },
   "entrypoints": [
-    "static/css/main.ec04773d.css",
+    "static/css/main.38382351.css",
     "static/js/main.b3729d6e.js"
   ]
 }
