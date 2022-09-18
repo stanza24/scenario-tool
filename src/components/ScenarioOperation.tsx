@@ -11,12 +11,14 @@ interface Props {
   operation: IOperationWithResult;
   deleteOperation: (operationId: string) => void;
   updateOperation: (operation: IOperation) => void;
+  init?: string;
 }
 
 export const ScenarioOperation = ({
   operation,
   deleteOperation,
   updateOperation,
+  init,
 }: Props) => {
   const [deleteOperationModalVisible, setDeleteOperationModalVisible] =
     useState<boolean>(false);
@@ -85,6 +87,19 @@ export const ScenarioOperation = ({
     return '1';
   };
 
+  const renderResult = () => {
+    let result = `= ${operation.result.toFixed(2)}`;
+
+    if (init && init !== '0') {
+      result += ` (${Math.round(operation.result - +init)}/${(
+        ((operation.result - +init || 0) * 100) /
+        +init
+      ).toFixed(2)}%)`;
+    }
+
+    return result;
+  };
+
   return (
     <div className={styles.scenarioOperation}>
       <CloseCircleOutlined
@@ -124,7 +139,7 @@ export const ScenarioOperation = ({
           />
         </Input.Group>
         <Typography.Text className={styles.result}>
-          = {operation.result.toFixed(0)}
+          {renderResult()}
         </Typography.Text>
       </div>
       <ArrowDownOutlined className={styles.operationIcon} />

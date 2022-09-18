@@ -102,8 +102,13 @@ export const Scenario = ({ scenario }: Props) => {
         onBlur={handleFixDecimals}
       />
       <ArrowDownOutlined className={styles.operationIcon} />
-      {operationsWithResult.map((operation) => (
+      {operationsWithResult.map((operation, index) => (
         <ScenarioOperation
+          {...(index === operationsWithResult.length - 1
+            ? {
+                init: scenario.init!,
+              }
+            : {})}
           key={operation.id}
           operation={operation}
           deleteOperation={handleDeleteOperation}

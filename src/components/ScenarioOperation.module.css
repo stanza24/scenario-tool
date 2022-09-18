@@ -37,3 +37,7 @@
     color: #999999 !important;
     padding: 10px;
 }
+
+.result {
+    text-align: end;
+}
