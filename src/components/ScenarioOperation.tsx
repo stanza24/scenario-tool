@@ -1,8 +1,13 @@
 import { ChangeEvent, useState } from 'react';
+import { DraggableProvidedDragHandleProps } from 'react-beautiful-dnd';
 
 import { ERateType, IOperation, IOperationWithResult } from 'types';
 
-import { ArrowDownOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import {
+  ArrowDownOutlined,
+  DeleteOutlined,
+  HolderOutlined,
+} from '@ant-design/icons';
 import { Button, Input, Modal, Select, Typography } from 'antd';
 
 import styles from './ScenarioOperation.module.css';
@@ -12,13 +17,14 @@ interface Props {
   deleteOperation: (operationId: string) => void;
   updateOperation: (operation: IOperation) => void;
   init?: string;
+  dragHandleProps?: DraggableProvidedDragHandleProps;
 }
 
 export const ScenarioOperation = ({
   operation,
   deleteOperation,
   updateOperation,
-  init,
+  dragHandleProps,
 }: Props) => {
   const [deleteOperationModalVisible, setDeleteOperationModalVisible] =
     useState<boolean>(false);
@@ -80,62 +86,59 @@ export const ScenarioOperation = ({
     return '1';
   };
 
-  const renderResult = () => {
-    let result = `= ${operation.result.toFixed(2)}`;
-
-    if (init && init !== '0') {
-      result += ` (${Math.round(operation.result - +init)}/${(
-        ((operation.result - +init || 0) * 100) /
-        +init
-      ).toFixed(2)}%)`;
-    }
-
-    return result;
-  };
-
   return (
     <div className={styles.scenarioOperation}>
-      <CloseCircleOutlined
-        className={styles.deleteButton}
-        onClick={() => setDeleteOperationModalVisible(true)}
-      />
-      <Typography.Title
-        editable={{
-          autoSize: { maxRows: 1 },
-          onChange: handleChangeName,
-        }}
-        ellipsis={{
-          rows: 1,
-          expandable: false,
-          tooltip: operation.name || 'Operation',
-        }}
-        level={5}
-        className={styles.operationName}
-      >
-        {operation.name || 'Operation'}
-      </Typography.Title>
-      <div className={styles.inputRow}>
-        <Input.Group compact className={styles.rateInputGroup}>
-          <Select value={operation.rateType} onChange={handleChangeRateType}>
-            <Select.Option value={ERateType.MUL}>x</Select.Option>
-            <Select.Option value={ERateType.DIV}>/</Select.Option>
-            <Select.Option value={ERateType.ADD_RAW}>+ N</Select.Option>
-            <Select.Option value={ERateType.SUB_RAW}>- N</Select.Option>
-            <Select.Option value={ERateType.ADD_PERC}>+ %</Select.Option>
-            <Select.Option value={ERateType.SUB_PERC}>- %</Select.Option>
-          </Select>
-          <Input
-            step={getRateStep()}
-            type="number"
-            placeholder={getRatePlaceholder()}
-            value={operation.rate!}
-            onChange={handleChangeRate}
-            onBlur={handleFixDecimals}
+      <div className={styles.operationContainer}>
+        <div className={styles.dragIcon} {...dragHandleProps}>
+          <HolderOutlined />
+        </div>
+        <div className={styles.inputsContainer}>
+          <DeleteOutlined
+            className={styles.deleteButton}
+            onClick={() => setDeleteOperationModalVisible(true)}
           />
-        </Input.Group>
-        <Typography.Text className={styles.result}>
-          {renderResult()}
-        </Typography.Text>
+          <Typography.Title
+            editable={{
+              autoSize: { maxRows: 1 },
+              onChange: handleChangeName,
+            }}
+            ellipsis={{
+              rows: 1,
+              expandable: false,
+              tooltip: operation.name || 'Operation',
+            }}
+            level={5}
+            className={styles.operationName}
+          >
+            {operation.name || 'Operation'}
+          </Typography.Title>
+          <div className={styles.inputRow}>
+            <Input.Group compact className={styles.rateInputGroup}>
+              <Select
+                value={operation.rateType}
+                onChange={handleChangeRateType}
+              >
+                <Select.Option value={ERateType.MUL}>x</Select.Option>
+                <Select.Option value={ERateType.DIV}>/</Select.Option>
+                <Select.Option value={ERateType.ADD_RAW}>+N</Select.Option>
+                <Select.Option value={ERateType.SUB_RAW}>-N</Select.Option>
+                <Select.Option value={ERateType.ADD_PERC}>+%</Select.Option>
+                <Select.Option value={ERateType.SUB_PERC}>-%</Select.Option>
+              </Select>
+              <Input
+                step={getRateStep()}
+                type="number"
+                placeholder={getRatePlaceholder()}
+                value={operation.rate!}
+                onChange={handleChangeRate}
+                onBlur={handleFixDecimals}
+              />
+            </Input.Group>
+            <Typography.Text className={styles.result}>
+              {`= ${operation.result.toFixed(2)}`}
+            </Typography.Text>
+          </div>
+        </div>
       </div>
       <ArrowDownOutlined className={styles.operationIcon} />
       <Modal

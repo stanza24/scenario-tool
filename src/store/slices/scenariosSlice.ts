@@ -2,7 +2,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { GetState } from 'zustand';
 
 import { RootStore, StoreSet } from '../';
-import { ERateType, IOperation, IScenario } from 'types';
+import { IScenario } from 'types';
 
 export interface ScenariosSlice {
   scenarios: IScenario[];
@@ -10,9 +10,7 @@ export interface ScenariosSlice {
   addScenario: () => void;
   updateScenario: (scenario: IScenario) => void;
   deleteScenario: (scenarioId: string) => void;
-  addOperation: (scenarioId: string) => void;
-  updateOperation: (scenarioId: string, operation: IOperation) => void;
-  deleteOperation: (scenarioId: string, operationId: string) => void;
+  moveScenario: (fromIndex: number, toIndex: number) => void;
 }
 
 export const createScenariosSlice = (
@@ -49,37 +47,10 @@ export const createScenariosSlice = (
       ];
     });
   },
-  addOperation: (scenarioId: string) => {
+  moveScenario: (fromIndex: number, toIndex: number) => {
     set((state) => {
-      const scIndex = state.scenarios.findIndex((sc) => sc.id === scenarioId);
-
-      state.scenarios[scIndex].operations.push({
-        id: uuidV4(),
-        name: '',
-        rate: '1',
-        rateType: ERateType.MUL,
-      });
-    });
-  },
-  updateOperation: (scenarioId, operation) => {
-    set((state) => {
-      const scIndex = state.scenarios.findIndex((sc) => sc.id === scenarioId);
-      const opIndex = state.scenarios[scIndex].operations.findIndex(
-        (tr: IOperation) => tr.id === operation.id
-      );
-      state.scenarios[scIndex].operations[opIndex] = operation;
-    });
-  },
-  deleteOperation: (scenarioId: string, operationId: string) => {
-    set((state) => {
-      const scIndex = state.scenarios.findIndex((sc) => sc.id === scenarioId);
-      const opIndex = state.scenarios[scIndex].operations.findIndex(
-        (tr: IOperation) => tr.id === operationId
-      );
-      state.scenarios[scIndex].operations = [
-        ...state.scenarios[scIndex].operations.slice(0, opIndex),
-        ...state.scenarios[scIndex].operations.slice(opIndex + 1),
-      ];
+      const [removed] = state.scenarios.splice(fromIndex, 1);
+      state.scenarios.splice(toIndex, 0, removed);
     });
   },
 });

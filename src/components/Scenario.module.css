@@ -1,11 +1,22 @@
 .scenario {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     width: 400px;
     padding: 10px 15px;
     border: 1px solid black;
     margin-right: 10px;
+    background-color: #dddddd;
+    border-radius: 10px;
+}
+
+.dragRow {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 4px;
+    font-size: 20px;
+    margin-bottom: 10px;
 }
 
 .scenarioButton {
@@ -17,4 +28,9 @@
     font-size: 20px;
     color: #999999 !important;
     padding: 10px;
+}
+
+.spreadContainer {
+    margin-top: 10px;
+    text-align: center;
 }

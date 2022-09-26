@@ -3,19 +3,37 @@ import shallow from 'zustand/shallow';
 
 import { ScenarioOperation } from './ScenarioOperation';
 import { useStore } from 'store';
-import { IOperation, IOperationWithResult, IScenario } from 'types';
+import {
+  EDroppableId,
+  IOperation,
+  IOperationWithResult,
+  IScenario,
+} from 'types';
 import { calculateResultWithRate } from 'utils';
 
-import { ArrowDownOutlined } from '@ant-design/icons';
-import { Button, Divider, Input, Modal } from 'antd';
+import {
+  ArrowDownOutlined,
+  DeleteOutlined,
+  HolderOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
+import { Button, Divider, Input, Modal, Typography } from 'antd';
 
 import styles from './Scenario.module.css';
+import {
+  DragDropContext,
+  Draggable,
+  DraggableProvidedDragHandleProps,
+  Droppable,
+  DropResult,
+} from 'react-beautiful-dnd';
 
 interface Props {
   scenario: IScenario;
+  dragHandleProps?: DraggableProvidedDragHandleProps;
 }
 
-export const Scenario = ({ scenario }: Props) => {
+export const Scenario = ({ scenario, dragHandleProps }: Props) => {
   const [deleteScenarioModalVisible, setDeleteScenarioModalVisible] =
     useState<boolean>(false);
 
@@ -25,6 +43,7 @@ export const Scenario = ({ scenario }: Props) => {
     addOperation,
     updateOperation,
     deleteOperation,
+    moveOperation,
   ] = useStore(
     (store) => [
       store.deleteScenario,
@@ -32,6 +51,7 @@ export const Scenario = ({ scenario }: Props) => {
       store.addOperation,
       store.updateOperation,
       store.deleteOperation,
+      store.moveOperation,
     ],
     shallow
   );
@@ -84,9 +104,40 @@ export const Scenario = ({ scenario }: Props) => {
     });
   };
 
+  const handleDragEnd = ({
+    source: { index: dragOrder },
+    destination,
+  }: DropResult) => {
+    if (!destination) return;
+
+    const { droppableId, index: dropOrder } = destination;
+
+    if (droppableId === EDroppableId.OPERATION_LIST && dragOrder !== dropOrder)
+      moveOperation(scenario.id, dragOrder, dropOrder);
+  };
+
+  const renderSpread = () => {
+    if (scenario.init && scenario.init !== '0') {
+      const lastOperationResult =
+        operationsWithResult.at(-1)?.result || +scenario.init;
+
+      return `Spread: ${Math.round(lastOperationResult - +scenario.init)} / ${(
+        ((lastOperationResult - +scenario.init || 0) * 100) /
+        +scenario.init
+      ).toFixed(2)}%`;
+    }
+
+    return null;
+  };
+
   return (
     <div className={styles.scenario}>
+      <div className={styles.dragRow} {...(dragHandleProps || {})}>
+        <HolderOutlined />
+      </div>
       <Button
+        danger
+        icon={<DeleteOutlined />}
         onClick={() => setDeleteScenarioModalVisible(true)}
         className={styles.scenarioButton}
       >
@@ -102,22 +153,52 @@ export const Scenario = ({ scenario }: Props) => {
         onBlur={handleFixDecimals}
       />
       <ArrowDownOutlined className={styles.operationIcon} />
-      {operationsWithResult.map((operation, index) => (
-        <ScenarioOperation
-          {...(index === operationsWithResult.length - 1
-            ? {
-                init: scenario.init!,
-              }
-            : {})}
-          key={operation.id}
-          operation={operation}
-          deleteOperation={handleDeleteOperation}
-          updateOperation={handleUpdateOperation}
-        />
-      ))}
-      <Button onClick={handleAddOperation} className={styles.scenarioButton}>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId={EDroppableId.OPERATION_LIST}>
+          {(droppableProvided) => (
+            <div
+              ref={droppableProvided.innerRef}
+              className={styles.scenariosList}
+              {...droppableProvided.droppableProps}
+            >
+              {operationsWithResult.map((operation, index) => (
+                <Draggable
+                  key={operation.id}
+                  draggableId={operation.id}
+                  index={index}
+                >
+                  {(draggableProvided) => (
+                    <div
+                      ref={draggableProvided.innerRef}
+                      {...draggableProvided.draggableProps}
+                      style={draggableProvided.draggableProps.style}
+                    >
+                      <ScenarioOperation
+                        key={operation.id}
+                        operation={operation}
+                        deleteOperation={handleDeleteOperation}
+                        updateOperation={handleUpdateOperation}
+                        dragHandleProps={draggableProvided.dragHandleProps}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {droppableProvided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+      <Button
+        icon={<PlusOutlined />}
+        onClick={handleAddOperation}
+        className={styles.scenarioButton}
+      >
         Add operation
       </Button>
+      <div className={styles.spreadContainer}>
+        <Typography.Text strong>{renderSpread()}</Typography.Text>
+      </div>
       <Modal
         open={deleteScenarioModalVisible}
         onCancel={() => setDeleteScenarioModalVisible(false)}

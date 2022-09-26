@@ -3,14 +3,19 @@ import { WritableDraft } from 'immer/dist/internal';
 import create, { GetState, StateCreator } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 
+import {
+  createOperationsSlice,
+  OperationsSlice,
+} from './slices/operationsSlice';
 import { createScenariosSlice, ScenariosSlice } from './slices/scenariosSlice';
 
-export type RootStore = ScenariosSlice;
+export type RootStore = ScenariosSlice & OperationsSlice;
 
 export type StoreSet = (fn: (draft: WritableDraft<RootStore>) => void) => void;
 
 const store = (set: StoreSet, get: GetState<RootStore>) => ({
   ...createScenariosSlice(set, get),
+  ...createOperationsSlice(set, get),
   ...JSON.parse(localStorage.getItem('state') || '{}'),
 });
 
