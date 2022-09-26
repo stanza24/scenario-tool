@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/scenario-tool/static/css/main.38382351.css",
-    "main.js": "/scenario-tool/static/js/main.b3729d6e.js",
+    "main.css": "/scenario-tool/static/css/main.896239f6.css",
+    "main.js": "/scenario-tool/static/js/main.49d979ae.js",
     "index.html": "/scenario-tool/index.html",
-    "main.38382351.css.map": "/scenario-tool/static/css/main.38382351.css.map",
-    "main.b3729d6e.js.map": "/scenario-tool/static/js/main.b3729d6e.js.map"
+    "main.896239f6.css.map": "/scenario-tool/static/css/main.896239f6.css.map",
+    "main.49d979ae.js.map": "/scenario-tool/static/js/main.49d979ae.js.map"
   },
   "entrypoints": [
-    "static/css/main.38382351.css",
-    "static/js/main.b3729d6e.js"
+    "static/css/main.896239f6.css",
+    "static/js/main.49d979ae.js"
   ]
 }
