@@ -46,20 +46,9 @@ export const ScenarioOperation = ({
   };
 
   const handleFixDecimals = () => {
-    let rate = '1';
-    switch (operation.rateType) {
-      case ERateType.MUL:
-      case ERateType.DIV:
-        rate = parseFloat((+operation.rate).toFixed(3)).toString();
-        break;
-      case ERateType.ADD_PERC:
-      case ERateType.SUB_PERC:
-        rate = parseFloat((+operation.rate).toFixed(3)).toString();
-    }
-
     updateOperation({
       ...operation,
-      rate,
+      rate: parseFloat((+operation.rate).toFixed(3)).toString(),
     });
   };
 
@@ -67,6 +56,8 @@ export const ScenarioOperation = ({
     switch (operation.rateType) {
       case ERateType.MUL:
       case ERateType.DIV:
+      case ERateType.ADD_RAW:
+      case ERateType.SUB_RAW:
         return 'Enter value';
       case ERateType.ADD_PERC:
       case ERateType.SUB_PERC:
@@ -80,6 +71,8 @@ export const ScenarioOperation = ({
       case ERateType.MUL:
       case ERateType.DIV:
         return '0.001';
+      case ERateType.ADD_RAW:
+      case ERateType.SUB_RAW:
       case ERateType.ADD_PERC:
       case ERateType.SUB_PERC:
         return '0.01';
@@ -126,8 +119,10 @@ export const ScenarioOperation = ({
           <Select value={operation.rateType} onChange={handleChangeRateType}>
             <Select.Option value={ERateType.MUL}>x</Select.Option>
             <Select.Option value={ERateType.DIV}>/</Select.Option>
-            <Select.Option value={ERateType.ADD_PERC}>+%</Select.Option>
-            <Select.Option value={ERateType.SUB_PERC}>-%</Select.Option>
+            <Select.Option value={ERateType.ADD_RAW}>+ N</Select.Option>
+            <Select.Option value={ERateType.SUB_RAW}>- N</Select.Option>
+            <Select.Option value={ERateType.ADD_PERC}>+ %</Select.Option>
+            <Select.Option value={ERateType.SUB_PERC}>- %</Select.Option>
           </Select>
           <Input
             step={getRateStep()}

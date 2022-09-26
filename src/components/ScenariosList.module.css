@@ -1,5 +1,6 @@
 .scenariosList {
     display: flex;
+    align-items: start;
     margin-top: 10px;
 }
 
