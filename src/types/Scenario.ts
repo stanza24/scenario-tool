@@ -20,6 +20,7 @@ export interface IOperationWithResult extends IOperation {
 
 export interface IScenario {
   id: string;
+  name?: string;
   init: string;
   operations: IOperation[];
 }

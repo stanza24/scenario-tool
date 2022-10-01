@@ -4,7 +4,7 @@ import { DraggableProvidedDragHandleProps } from 'react-beautiful-dnd';
 import { ERateType, IOperation, IOperationWithResult } from 'types';
 
 import {
-  ArrowDownOutlined,
+  ArrowRightOutlined,
   DeleteOutlined,
   HolderOutlined,
 } from '@ant-design/icons';
@@ -89,14 +89,13 @@ export const ScenarioOperation = ({
   return (
     <div className={styles.scenarioOperation}>
       <div className={styles.operationContainer}>
-        <div className={styles.dragIcon} {...dragHandleProps}>
-          <HolderOutlined />
-        </div>
         <div className={styles.inputsContainer}>
           <DeleteOutlined
             className={styles.deleteButton}
             onClick={() => setDeleteOperationModalVisible(true)}
           />
+          <HolderOutlined className={styles.dragButton} {...dragHandleProps} />
+
           <Typography.Title
             editable={{
               autoSize: { maxRows: 1 },
@@ -112,61 +111,56 @@ export const ScenarioOperation = ({
           >
             {operation.name || 'Operation'}
           </Typography.Title>
-          <div className={styles.inputRow}>
-            <Input.Group compact className={styles.rateInputGroup}>
-              <Select
-                value={operation.rateType}
-                onChange={handleChangeRateType}
-              >
-                <Select.Option value={ERateType.MUL}>x</Select.Option>
-                <Select.Option value={ERateType.DIV}>/</Select.Option>
-                <Select.Option value={ERateType.ADD_RAW}>+N</Select.Option>
-                <Select.Option value={ERateType.SUB_RAW}>-N</Select.Option>
-                <Select.Option value={ERateType.ADD_PERC}>+%</Select.Option>
-                <Select.Option value={ERateType.SUB_PERC}>-%</Select.Option>
-              </Select>
-              <Input
-                step={getRateStep()}
-                type="number"
-                placeholder={getRatePlaceholder()}
-                value={operation.rate!}
-                onChange={handleChangeRate}
-                onBlur={handleFixDecimals}
-              />
-            </Input.Group>
-            <Typography.Text className={styles.result}>
-              {`= ${operation.result.toFixed(2)}`}
-            </Typography.Text>
-          </div>
+          <Input.Group compact className={styles.rateInputGroup}>
+            <Select value={operation.rateType} onChange={handleChangeRateType}>
+              <Select.Option value={ERateType.MUL}>x</Select.Option>
+              <Select.Option value={ERateType.DIV}>/</Select.Option>
+              <Select.Option value={ERateType.ADD_RAW}>+N</Select.Option>
+              <Select.Option value={ERateType.SUB_RAW}>-N</Select.Option>
+              <Select.Option value={ERateType.ADD_PERC}>+%</Select.Option>
+              <Select.Option value={ERateType.SUB_PERC}>-%</Select.Option>
+            </Select>
+            <Input
+              step={getRateStep()}
+              type="number"
+              placeholder={getRatePlaceholder()}
+              value={operation.rate!}
+              onChange={handleChangeRate}
+              onBlur={handleFixDecimals}
+            />
+          </Input.Group>
+          <Typography.Text className={styles.result}>
+            {`= ${operation.result.toFixed(2)}`}
+          </Typography.Text>
         </div>
+        <Modal
+          open={deleteOperationModalVisible}
+          onCancel={() => setDeleteOperationModalVisible(false)}
+          footer={[
+            <Button
+              key="cancel"
+              type="default"
+              onClick={() => setDeleteOperationModalVisible(false)}
+            >
+              Cancel
+            </Button>,
+            <Button
+              key="delete"
+              type="primary"
+              onClick={() => {
+                setDeleteOperationModalVisible(false);
+                deleteOperation(operation.id);
+              }}
+            >
+              Delete
+            </Button>,
+          ]}
+        >
+          Are you sure you want to delete operation <b>{operation.name}</b> from
+          scenario?
+        </Modal>
       </div>
-      <ArrowDownOutlined className={styles.operationIcon} />
-      <Modal
-        open={deleteOperationModalVisible}
-        onCancel={() => setDeleteOperationModalVisible(false)}
-        footer={[
-          <Button
-            key="cancel"
-            type="default"
-            onClick={() => setDeleteOperationModalVisible(false)}
-          >
-            Cancel
-          </Button>,
-          <Button
-            key="delete"
-            type="primary"
-            onClick={() => {
-              setDeleteOperationModalVisible(false);
-              deleteOperation(operation.id);
-            }}
-          >
-            Delete
-          </Button>,
-        ]}
-      >
-        Are you sure you want to delete operation <b>{operation.name}</b> from
-        scenario?
-      </Modal>
+      <ArrowRightOutlined className={styles.operationIcon} />
     </div>
   );
 };

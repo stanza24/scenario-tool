@@ -10,13 +10,13 @@ import { Scenario } from './Scenario';
 import { useStore } from 'store';
 import { EDroppableId, IScenario } from 'types';
 
-import { Button } from 'antd';
-
+import scenarioStyles from './Scenario.module.css';
 import styles from './ScenariosList.module.css';
+import classNames from 'classnames';
 
 export const ScenariosList = () => {
-  const [scenarios, addScenario, moveScenario] = useStore(
-    (store) => [store.scenarios, store.addScenario, store.moveScenario],
+  const [scenarios, moveScenario] = useStore(
+    (store) => [store.scenarios, store.moveScenario],
     shallow
   );
 
@@ -33,49 +33,44 @@ export const ScenariosList = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable
-          droppableId={EDroppableId.SCENARIO_LIST}
-          direction="horizontal"
-        >
-          {(droppableProvided) => (
-            <div
-              ref={droppableProvided.innerRef}
-              className={styles.scenariosList}
-            >
-              {scenarios.map((scenario: IScenario, index: number) => (
-                <Draggable
-                  key={scenario.id}
-                  draggableId={scenario.id}
-                  index={index}
-                >
-                  {(draggableProvided) => (
-                    <div
-                      ref={draggableProvided.innerRef}
-                      {...draggableProvided.draggableProps}
-                      style={draggableProvided.draggableProps.style}
-                    >
-                      <Scenario
-                        scenario={scenario}
-                        dragHandleProps={draggableProvided.dragHandleProps}
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {droppableProvided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-      <Button
-        type="primary"
-        onClick={addScenario}
-        className={styles.addScenario}
-      >
-        Add scenario
-      </Button>
-    </div>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId={EDroppableId.SCENARIO_LIST}>
+        {(droppableProvided) => (
+          <div
+            ref={droppableProvided.innerRef}
+            className={styles.scenariosList}
+          >
+            {scenarios.map((scenario: IScenario, index: number) => (
+              <Draggable
+                key={scenario.id}
+                draggableId={scenario.id}
+                index={index}
+              >
+                {(draggableProvided, draggableSnapshot) => (
+                  <div
+                    ref={draggableProvided.innerRef}
+                    {...draggableProvided.draggableProps}
+                    style={draggableProvided.draggableProps.style}
+                    className={classNames(
+                      scenarioStyles.scenarioDraggableContainer,
+                      {
+                        [scenarioStyles.scenarioDraggingContainer]:
+                          draggableSnapshot.isDragging,
+                      }
+                    )}
+                  >
+                    <Scenario
+                      scenario={scenario}
+                      dragHandleProps={draggableProvided.dragHandleProps}
+                    />
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {droppableProvided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 };
