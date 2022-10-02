@@ -23,13 +23,13 @@ import {
   DeleteOutlined,
   HolderOutlined,
   PlusOutlined,
-  VerticalAlignMiddleOutlined,
+  VerticalAlignBottomOutlined,
   VerticalAlignTopOutlined,
 } from '@ant-design/icons';
 import { Button, Input, Modal, Typography } from 'antd';
 
-import operationStyles from './ScenarioOperation.module.css';
 import styles from './Scenario.module.css';
+import operationStyles from './ScenarioOperation.module.css';
 import classNames from 'classnames';
 
 interface Props {
@@ -66,8 +66,8 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
 
   const isCollapsed = collapsedScenariosIds.some((id) => scenario.id === id);
   const CollapseIcon = isCollapsed
-    ? VerticalAlignTopOutlined
-    : VerticalAlignMiddleOutlined;
+    ? VerticalAlignBottomOutlined
+    : VerticalAlignTopOutlined;
 
   const operationsWithResult: IOperationWithResult[] = useMemo(() => {
     const ops: IOperationWithResult[] = [];

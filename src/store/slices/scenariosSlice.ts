@@ -3,12 +3,14 @@ import { GetState } from 'zustand';
 
 import { RootStore, StoreSet } from '../';
 import { IScenario } from 'types';
+import { isScenarioValid } from 'utils/isScenarioValid';
 
 export interface ScenariosSlice {
   scenarios: IScenario[];
   collapsedScenariosIds: string[];
   clearScenarios: () => void;
-  addScenario: () => void;
+  createScenario: () => void;
+  addScenarios: (scenarios: IScenario[]) => void;
   updateScenario: (scenario: IScenario) => void;
   deleteScenario: (scenarioId: string) => void;
   moveScenario: (fromIndex: number, toIndex: number) => void;
@@ -26,13 +28,25 @@ export const createScenariosSlice = (
       state.scenarios = [];
     });
   },
-  addScenario: () => {
+  createScenario: () => {
     set((state) => {
       state.scenarios.push({
         id: uuidV4(),
         name: 'Scenario',
         init: '0',
         operations: [],
+      });
+    });
+  },
+  addScenarios: (scenarios: IScenario[]) => {
+    set((state) => {
+      scenarios.forEach((scenario) => {
+        if (
+          !state.scenarios.find((sc) => sc.id === scenario.id) &&
+          isScenarioValid(scenario)
+        ) {
+          state.scenarios.push(scenario);
+        }
       });
     });
   },
