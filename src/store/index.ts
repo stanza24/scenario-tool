@@ -3,6 +3,8 @@ import { WritableDraft } from 'immer/dist/internal';
 import create, { GetState, StateCreator } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 
+import { debounce } from 'debounce';
+
 import {
   createOperationsSlice,
   OperationsSlice,
@@ -35,6 +37,10 @@ export const useStore = create(
   )
 );
 
+const saveStoreToStorage = (store: string) =>
+  localStorage.setItem('state', store);
+const debouncedSaveStoreToStorage = debounce(saveStoreToStorage, 1000);
+
 useStore.subscribe((state) => {
   const stateForSave: Record<string, any> = {};
 
@@ -42,5 +48,5 @@ useStore.subscribe((state) => {
     if (typeof state[key] !== 'function') stateForSave[key] = state[key];
   }
 
-  localStorage.setItem('state', JSON.stringify(stateForSave));
+  debouncedSaveStoreToStorage(JSON.stringify(stateForSave));
 });

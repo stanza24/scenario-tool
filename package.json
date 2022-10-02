@@ -12,6 +12,7 @@
     "@types/react-dom": "^18.0.6",
     "antd": "^4.23.1",
     "classnames": "^2.3.2",
+    "debounce": "^1.2.1",
     "immer": "^9.0.15",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
@@ -47,6 +48,7 @@
     ]
   },
   "devDependencies": {
+    "@types/debounce": "^1.2.1",
     "@types/react-beautiful-dnd": "^13.1.2",
     "@types/uuid": "^8.3.4",
     "gh-pages": "^4.0.0",
