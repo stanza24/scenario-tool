@@ -81,12 +81,31 @@ export const createScenariosSlice = (
   },
   deleteScenario: (scenarioId: string, clearAloneOps: boolean) => {
     set((state) => {
-      if (clearAloneOps) {
-        state.scenarios[scenarioId].operations.forEach((opId) => {
-          if (state.operations[opId].usage === 1)
-            state.removeOperationFromScenario(scenarioId, opId);
-        });
-      }
+      state.scenarios[scenarioId].operations.forEach((opId) => {
+        switch (true) {
+          case state.operations[opId].usage > 2: {
+            state.operations[opId].usage = state.operations[opId].usage - 1;
+            return;
+          }
+          case state.operations[opId].usage === 2: {
+            state.operations[opId].usage = 1;
+
+            const color = state.operations[opId].color;
+            if (color) state.colors[color] = true;
+
+            state.operations[opId].color = null;
+            return;
+          }
+          case state.operations[opId].usage === 1 && clearAloneOps: {
+            state.operations[opId].usage = state.operations[opId].usage - 1;
+            delete state.operations[opId];
+            return;
+          }
+          case state.operations[opId].usage === 1 && !clearAloneOps: {
+            delete state.operations[opId];
+          }
+        }
+      });
 
       delete state.scenarios[scenarioId];
     });
