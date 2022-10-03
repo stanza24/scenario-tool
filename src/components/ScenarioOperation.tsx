@@ -21,7 +21,7 @@ interface Props {
 }
 
 export const ScenarioOperation = ({
-  operation,
+  operation: { result, ...rawOperation },
   deleteOperation,
   updateOperation,
   dragHandleProps,
@@ -31,13 +31,13 @@ export const ScenarioOperation = ({
 
   const handleChangeName = (value: string): void =>
     updateOperation({
-      ...operation,
+      ...rawOperation,
       name: value || '',
     });
 
   const handleChangeRateType = (rateType: ERateType) => {
     updateOperation({
-      ...operation,
+      ...rawOperation,
       rateType,
     });
   };
@@ -46,20 +46,20 @@ export const ScenarioOperation = ({
     target: { value },
   }: ChangeEvent<HTMLInputElement>) => {
     updateOperation({
-      ...operation,
+      ...rawOperation,
       rate: value ?? 1,
     });
   };
 
   const handleFixDecimals = () => {
     updateOperation({
-      ...operation,
-      rate: parseFloat((+operation.rate).toFixed(3)).toString(),
+      ...rawOperation,
+      rate: parseFloat((+rawOperation.rate).toFixed(3)).toString(),
     });
   };
 
   const getRatePlaceholder = () => {
-    switch (operation.rateType) {
+    switch (rawOperation.rateType) {
       case ERateType.MUL:
       case ERateType.DIV:
       case ERateType.ADD_RAW:
@@ -73,7 +73,7 @@ export const ScenarioOperation = ({
   };
 
   const getRateStep = () => {
-    switch (operation.rateType) {
+    switch (rawOperation.rateType) {
       case ERateType.MUL:
       case ERateType.DIV:
         return '0.001';
@@ -88,7 +88,10 @@ export const ScenarioOperation = ({
 
   return (
     <div className={styles.scenarioOperation}>
-      <div className={styles.operationContainer}>
+      <div
+        className={styles.operationContainer}
+        style={{ border: `2px solid ${rawOperation.color || 'transparent'}` }}
+      >
         <div className={styles.inputsContainer}>
           <DeleteOutlined
             className={styles.deleteButton}
@@ -104,15 +107,18 @@ export const ScenarioOperation = ({
             ellipsis={{
               rows: 1,
               expandable: false,
-              tooltip: operation.name || 'Operation',
+              tooltip: rawOperation.name || 'Operation',
             }}
             level={5}
             className={styles.operationName}
           >
-            {operation.name || 'Operation'}
+            {rawOperation.name || 'Operation'}
           </Typography.Title>
           <Input.Group compact className={styles.rateInputGroup}>
-            <Select value={operation.rateType} onChange={handleChangeRateType}>
+            <Select
+              value={rawOperation.rateType}
+              onChange={handleChangeRateType}
+            >
               <Select.Option value={ERateType.MUL}>x</Select.Option>
               <Select.Option value={ERateType.DIV}>/</Select.Option>
               <Select.Option value={ERateType.ADD_RAW}>+N</Select.Option>
@@ -124,13 +130,13 @@ export const ScenarioOperation = ({
               step={getRateStep()}
               type="number"
               placeholder={getRatePlaceholder()}
-              value={operation.rate!}
+              value={rawOperation.rate!}
               onChange={handleChangeRate}
               onBlur={handleFixDecimals}
             />
           </Input.Group>
           <Typography.Text className={styles.result}>
-            {`= ${operation.result.toFixed(2)}`}
+            {`= ${result.toFixed(2)}`}
           </Typography.Text>
         </div>
         <Modal
@@ -149,15 +155,15 @@ export const ScenarioOperation = ({
               type="primary"
               onClick={() => {
                 setDeleteOperationModalVisible(false);
-                deleteOperation(operation.id);
+                deleteOperation(rawOperation.id);
               }}
             >
               Delete
             </Button>,
           ]}
         >
-          Are you sure you want to delete operation <b>{operation.name}</b> from
-          scenario?
+          Are you sure you want to delete operation <b>{rawOperation.name}</b>{' '}
+          from scenario?
         </Modal>
       </div>
       <ArrowRightOutlined className={styles.operationIcon} />

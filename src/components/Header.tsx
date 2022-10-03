@@ -35,7 +35,7 @@ export const Header = () => {
       <Space>
         <Button
           type="primary"
-          disabled={scenarios.length === 0}
+          disabled={Object.keys(scenarios).length === 0}
           onClick={() => setClearAllModalVisible(true)}
         >
           Clear all
@@ -78,7 +78,7 @@ export const Header = () => {
           </Button>,
         ]}
       >
-        Are you sure you want to clear <b>ALL scenarios</b>?
+        Are you sure you want to clear <b>everything</b>?
       </Modal>
     </div>
   );

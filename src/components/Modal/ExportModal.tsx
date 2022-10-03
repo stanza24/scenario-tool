@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import shallow from 'zustand/shallow';
 
 import { usePrev } from 'hooks';
 import { RootStore, useStore } from 'store';
+import { IOperation } from 'types';
 
 import { Button, message, Modal, Table, Typography } from 'antd';
 import { ColumnsType } from 'antd/es/table';
@@ -35,11 +37,14 @@ export const ExportModal = ({ visible, onClose }: Props) => {
 
   const prevVisible = usePrev(visible);
 
-  const scenarios = useStore((store: RootStore) => store.scenarios);
+  const [scenarios, operations] = useStore(
+    (store: RootStore) => [store.scenarios, store.operations],
+    shallow
+  );
 
   const data: ExportRowType[] = useMemo(
     () =>
-      scenarios.map((scenario) => ({
+      Object.values(scenarios).map((scenario) => ({
         key: scenario.id,
         name: scenario.name || 'Scenario',
         opsNumber: scenario.operations.length,
@@ -50,13 +55,26 @@ export const ExportModal = ({ visible, onClose }: Props) => {
   const handleExportAsJSON = () => {
     const exportingScenarios = [];
     for (let row of selectedRows) {
-      const scenario = scenarios.find((sc) => sc.id === row);
+      const scenario = scenarios[row];
       if (scenario) exportingScenarios.push(scenario);
     }
 
+    const exportingOperations: Record<string, IOperation> = {};
+    exportingScenarios.forEach((scenario) => {
+      scenario.operations.forEach((opId) => {
+        if (!exportingOperations[opId])
+          exportingOperations[opId] = operations[opId];
+      });
+    });
+
     const data =
       'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify(exportingScenarios));
+      encodeURIComponent(
+        JSON.stringify({
+          scenarios: exportingScenarios,
+          operations: Object.values(exportingOperations),
+        })
+      );
     const a = document.createElement('a');
     a.setAttribute('href', data);
     a.setAttribute('download', 'Scenarios.json');
@@ -68,11 +86,22 @@ export const ExportModal = ({ visible, onClose }: Props) => {
   const handleImportAsText = () => {
     const exportingScenarios = [];
     for (let row of selectedRows) {
-      const scenario = scenarios.find((sc) => sc.id === row);
+      const scenario = scenarios[row];
       if (scenario) exportingScenarios.push(scenario);
     }
 
-    const rawText = JSON.stringify(exportingScenarios);
+    const exportingOperations: Record<string, IOperation> = {};
+    exportingScenarios.forEach((scenario) => {
+      scenario.operations.forEach((opId) => {
+        if (!exportingOperations[opId])
+          exportingOperations[opId] = operations[opId];
+      });
+    });
+
+    const rawText = JSON.stringify({
+      scenarios: exportingScenarios,
+      operations: Object.values(exportingOperations),
+    });
     window.navigator.clipboard.writeText(rawText);
 
     message.success('Copied to clipboard');

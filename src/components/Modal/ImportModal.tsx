@@ -26,7 +26,7 @@ export const ImportModal = ({ visible, onClose }: Props) => {
   const [form] = Form.useForm();
   const prevVisible = usePrev(visible);
 
-  const addScenarios = useStore((store: RootStore) => store.addScenarios);
+  const importScenarios = useStore((store: RootStore) => store.importScenarios);
 
   const importButtonDisabled =
     (activeTabKey === 'text' && inputValue === '') ||
@@ -52,10 +52,8 @@ export const ImportModal = ({ visible, onClose }: Props) => {
   const handleImportAsText = () => {
     const importingScenarios = JSON.parse(inputValue);
 
-    if (Array.isArray(importingScenarios)) {
-      addScenarios(importingScenarios);
-    } else if (typeof importingScenarios === 'object') {
-      addScenarios([importingScenarios]);
+    if (typeof importingScenarios === 'object') {
+      importScenarios(importingScenarios);
     }
 
     onClose();
@@ -71,10 +69,8 @@ export const ImportModal = ({ visible, onClose }: Props) => {
               event.target.result as string
             );
 
-            if (Array.isArray(importingScenarios)) {
-              addScenarios(importingScenarios);
-            } else if (typeof importingScenarios === 'object') {
-              addScenarios([importingScenarios]);
+            if (typeof importingScenarios === 'object') {
+              importScenarios(importingScenarios);
             }
 
             onClose();

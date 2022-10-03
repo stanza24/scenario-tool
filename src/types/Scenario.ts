@@ -12,6 +12,8 @@ export interface IOperation {
   name: string;
   rate: string;
   rateType: ERateType;
+  usage: number;
+  color: string | null;
 }
 
 export interface IOperationWithResult extends IOperation {
@@ -20,7 +22,8 @@ export interface IOperationWithResult extends IOperation {
 
 export interface IScenario {
   id: string;
+  order: number;
   name?: string;
   init: string;
-  operations: IOperation[];
+  operations: string[];
 }

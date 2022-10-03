@@ -2,17 +2,24 @@ import { v4 as uuidV4 } from 'uuid';
 import { GetState } from 'zustand';
 
 import { RootStore, StoreSet } from '../';
-import { IScenario } from 'types';
-import { isScenarioValid } from 'utils/isScenarioValid';
+import { IOperation, IScenario } from 'types';
+import { isOperationValid, isScenarioValid } from 'utils/isScenarioValid';
+import { OP_COLORS } from '../../components/const';
 
 export interface ScenariosSlice {
-  scenarios: IScenario[];
+  scenarios: Record<string, IScenario>;
   collapsedScenariosIds: string[];
   clearScenarios: () => void;
   createScenario: () => void;
-  addScenarios: (scenarios: IScenario[]) => void;
+  importScenarios: ({
+    scenarios,
+    operations,
+  }: {
+    scenarios: IScenario[];
+    operations: IOperation[];
+  }) => void;
   updateScenario: (scenario: IScenario) => void;
-  deleteScenario: (scenarioId: string) => void;
+  deleteScenario: (scenarioId: string, clearAloneOps: boolean) => void;
   moveScenario: (fromIndex: number, toIndex: number) => void;
   toggleCollapseScenario: (id: string) => void;
 }
@@ -21,54 +28,100 @@ export const createScenariosSlice = (
   set: StoreSet,
   get: GetState<RootStore>
 ): ScenariosSlice => ({
-  scenarios: [],
+  scenarios: {},
   collapsedScenariosIds: [],
   clearScenarios: () => {
     set((state) => {
-      state.scenarios = [];
+      state.scenarios = {};
+      state.operations = {};
+      state.colors = OP_COLORS.reduce(
+        (acc, color) => ({ ...acc, [color]: true }),
+        {}
+      );
     });
   },
   createScenario: () => {
     set((state) => {
-      state.scenarios.push({
+      const newScenario = {
         id: uuidV4(),
+        order: Object.keys(state.scenarios).length,
         name: 'Scenario',
         init: '0',
         operations: [],
-      });
+      };
+
+      state.scenarios[newScenario.id] = newScenario;
     });
   },
-  addScenarios: (scenarios: IScenario[]) => {
+  importScenarios: ({
+    scenarios,
+    operations,
+  }: {
+    scenarios: IScenario[];
+    operations: IOperation[];
+  }) => {
     set((state) => {
+      operations.forEach((operation) => {
+        if (!state.operations[operation.id] && isOperationValid(operation)) {
+          state.operations[operation.id] = operation;
+        }
+      });
+
       scenarios.forEach((scenario) => {
-        if (
-          !state.scenarios.find((sc) => sc.id === scenario.id) &&
-          isScenarioValid(scenario)
-        ) {
-          state.scenarios.push(scenario);
+        if (!state.scenarios[scenario.id] && isScenarioValid(scenario)) {
+          state.scenarios[scenario.id] = scenario;
         }
       });
     });
   },
   updateScenario: (scenario) => {
     set((state) => {
-      const index = state.scenarios.findIndex((sc) => sc.id === scenario.id);
-      state.scenarios[index] = scenario;
+      state.scenarios[scenario.id] = scenario;
     });
   },
-  deleteScenario: (scenarioId: string) => {
+  deleteScenario: (scenarioId: string, clearAloneOps: boolean) => {
     set((state) => {
-      const index = state.scenarios.findIndex((sc) => sc.id === scenarioId);
-      state.scenarios = [
-        ...state.scenarios.slice(0, index),
-        ...state.scenarios.slice(index + 1),
-      ];
+      if (clearAloneOps) {
+        state.scenarios[scenarioId].operations.forEach((opId) => {
+          if (state.operations[opId].usage === 1)
+            state.removeOperationFromScenario(scenarioId, opId);
+        });
+      }
+
+      delete state.scenarios[scenarioId];
     });
   },
   moveScenario: (fromIndex: number, toIndex: number) => {
     set((state) => {
-      const [removed] = state.scenarios.splice(fromIndex, 1);
-      state.scenarios.splice(toIndex, 0, removed);
+      const scenarios = Object.values(state.scenarios);
+      const fromSc = scenarios.find((sc) => sc.order === fromIndex);
+
+      if (fromSc)
+        state.scenarios[fromSc.id] = {
+          ...state.scenarios[fromSc.id],
+          order: toIndex,
+        };
+
+      if (toIndex > fromIndex) {
+        for (let i = fromIndex + 1; i <= toIndex; i++) {
+          const sc = scenarios.find((sc) => sc.order === i);
+
+          if (sc)
+            state.scenarios[sc.id] = {
+              ...state.scenarios[sc.id],
+              order: sc.order - 1,
+            };
+        }
+      } else {
+        for (let i = toIndex; i < fromIndex; i++) {
+          const sc = scenarios.find((sc) => sc.order === i);
+          if (sc)
+            state.scenarios[sc.id] = {
+              ...state.scenarios[sc.id],
+              order: sc.order + 1,
+            };
+        }
+      }
     });
   },
   toggleCollapseScenario: (id: string) => {

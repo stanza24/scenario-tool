@@ -7,6 +7,4 @@ export const isOperationValid = (operation: Partial<IOperation>): boolean =>
   typeof operation.id === 'string';
 
 export const isScenarioValid = (scenario: Partial<IScenario>): boolean =>
-  typeof scenario.init === 'string' &&
-  scenario.operations !== undefined &&
-  scenario.operations.every((op) => isOperationValid(op));
+  typeof scenario.init === 'string' && scenario.operations !== undefined;

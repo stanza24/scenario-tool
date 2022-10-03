@@ -1,10 +1,8 @@
 import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import {
-  DragDropContext,
   Draggable,
   DraggableProvidedDragHandleProps,
   Droppable,
-  DropResult,
 } from 'react-beautiful-dnd';
 import shallow from 'zustand/shallow';
 
@@ -41,25 +39,28 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
   const [deleteScenarioModalVisible, setDeleteScenarioModalVisible] =
     useState<boolean>(false);
 
+  const [clearAloneOpsModalVisible, setClearAloneOpsModalVisible] =
+    useState<boolean>(false);
+
   const [
     collapsedScenariosIds,
     deleteScenario,
     updateScenario,
     toggleCollapseScenario,
-    addOperation,
+    operations,
+    createOperation,
     updateOperation,
-    deleteOperation,
-    moveOperation,
+    removeOperationFromScenario,
   ] = useStore(
     (store: RootStore) => [
       store.collapsedScenariosIds,
       store.deleteScenario,
       store.updateScenario,
       store.toggleCollapseScenario,
-      store.addOperation,
+      store.operations,
+      store.createOperation,
       store.updateOperation,
-      store.deleteOperation,
-      store.moveOperation,
+      store.removeOperationFromScenario,
     ],
     shallow
   );
@@ -72,19 +73,23 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
   const operationsWithResult: IOperationWithResult[] = useMemo(() => {
     const ops: IOperationWithResult[] = [];
 
-    for (let op of scenario.operations) {
-      ops.push({
-        ...op,
-        result: calculateResultWithRate(
-          op.rateType,
-          op.rate,
-          ops.at(-1)?.result || Number(scenario.init) || 0
-        ),
-      });
+    for (let opId of scenario.operations) {
+      const operation = operations[opId];
+
+      if (operation) {
+        ops.push({
+          ...operation,
+          result: calculateResultWithRate(
+            operation.rateType,
+            operation.rate,
+            ops.at(-1)?.result || Number(scenario.init) || 0
+          ),
+        });
+      }
     }
 
     return ops;
-  }, [scenario.operations, scenario.init]);
+  }, [operations, scenario.operations, scenario.init]);
 
   const handleChangeInit = ({
     target: { value },
@@ -94,18 +99,18 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
       init: value || '',
     });
 
-  const handleAddOperation = (): void => addOperation(scenario.id);
+  const handleAddOperation = (): void => createOperation(scenario.id);
 
   const handleDeleteOperation = useCallback(
     (operationId: string): void => {
-      deleteOperation(scenario.id, operationId);
+      removeOperationFromScenario(scenario.id, operationId);
     },
     [scenario.id]
   );
 
   const handleUpdateOperation = useCallback(
     (operation: IOperation): void => {
-      updateOperation(scenario.id, operation);
+      updateOperation(operation);
     },
     [scenario.id, updateOperation]
   );
@@ -115,18 +120,6 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
       ...scenario,
       init: String(Number(Number(scenario.init).toFixed(2))),
     });
-  };
-
-  const handleDragEnd = ({
-    source: { index: dragOrder },
-    destination,
-  }: DropResult) => {
-    if (!destination) return;
-
-    const { droppableId, index: dropOrder } = destination;
-
-    if (droppableId === EDroppableId.OPERATION_LIST && dragOrder !== dropOrder)
-      moveOperation(scenario.id, dragOrder, dropOrder);
   };
 
   const handleToggleCollapseScenario = () =>
@@ -148,6 +141,18 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
         ...scenario,
         name: 'Scenario',
       });
+  };
+
+  const handleAskToRemoveOperations = () => {
+    const hasAloneOps = scenario.operations.some(
+      (opId) => operations[opId]?.usage === 1
+    );
+
+    if (hasAloneOps) {
+      setClearAloneOpsModalVisible(true);
+    } else {
+      deleteScenario(scenario.id, false);
+    }
   };
 
   const renderSpread = () => {
@@ -212,55 +217,54 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
           className={styles.initInput}
         />
         <ArrowRightOutlined className={styles.operationIcon} />
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable
-            droppableId={EDroppableId.OPERATION_LIST}
-            direction="horizontal"
-          >
-            {(droppableProvided, droppableSnapshot) => (
-              <div
-                ref={droppableProvided.innerRef}
-                className={classNames(styles.operationsList, {
-                  [styles.operationsListDragging]:
-                    droppableSnapshot.isDraggingOver,
-                })}
-                {...droppableProvided.droppableProps}
-              >
-                {operationsWithResult.map((operation, index) => (
-                  <Draggable
-                    key={operation.id}
-                    draggableId={operation.id}
-                    index={index}
-                  >
-                    {(draggableProvided, draggableSnapshot) => (
-                      <div
-                        ref={draggableProvided.innerRef}
-                        {...draggableProvided.draggableProps}
-                        style={draggableProvided.draggableProps.style}
-                        className={classNames(
-                          operationStyles.operationDraggableContainer,
-                          {
-                            [operationStyles.operationDraggingContainer]:
-                              draggableSnapshot.isDragging,
-                          }
-                        )}
-                      >
-                        <ScenarioOperation
-                          key={operation.id}
-                          operation={operation}
-                          deleteOperation={handleDeleteOperation}
-                          updateOperation={handleUpdateOperation}
-                          dragHandleProps={draggableProvided.dragHandleProps}
-                        />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {droppableProvided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <Droppable
+          droppableId={scenario.id}
+          type={EDroppableId.OPERATION_LIST}
+          direction="horizontal"
+        >
+          {(droppableProvided, droppableSnapshot) => (
+            <div
+              ref={droppableProvided.innerRef}
+              className={classNames(styles.operationsList, {
+                [styles.operationsListDragging]:
+                  droppableSnapshot.isDraggingOver,
+              })}
+              {...droppableProvided.droppableProps}
+            >
+              {operationsWithResult.map((operation, index) => (
+                <Draggable
+                  key={operation.id}
+                  draggableId={`${scenario.id};${operation.id}`}
+                  index={index}
+                >
+                  {(draggableProvided, draggableSnapshot) => (
+                    <div
+                      ref={draggableProvided.innerRef}
+                      {...draggableProvided.draggableProps}
+                      style={draggableProvided.draggableProps.style}
+                      className={classNames(
+                        operationStyles.operationDraggableContainer,
+                        {
+                          [operationStyles.operationDraggingContainer]:
+                            draggableSnapshot.isDragging,
+                        }
+                      )}
+                    >
+                      <ScenarioOperation
+                        key={operation.id}
+                        operation={operation}
+                        deleteOperation={handleDeleteOperation}
+                        updateOperation={handleUpdateOperation}
+                        dragHandleProps={draggableProvided.dragHandleProps}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {droppableProvided.placeholder}
+            </div>
+          )}
+        </Droppable>
         <Button
           icon={<PlusOutlined />}
           onClick={handleAddOperation}
@@ -287,7 +291,7 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
               type="primary"
               onClick={() => {
                 setDeleteScenarioModalVisible(false);
-                deleteScenario(scenario.id);
+                handleAskToRemoveOperations();
               }}
             >
               Delete
@@ -295,6 +299,43 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
           ]}
         >
           Are you sure you want to delete this <b>scenario</b>?
+        </Modal>
+        <Modal
+          open={clearAloneOpsModalVisible}
+          onCancel={() => setClearAloneOpsModalVisible(false)}
+          footer={[
+            <Button
+              key="cancel"
+              type="default"
+              onClick={() => setClearAloneOpsModalVisible(false)}
+            >
+              Cancel
+            </Button>,
+            <Button
+              key="keep"
+              type="primary"
+              onClick={() => {
+                deleteScenario(scenario.id, false);
+                setClearAloneOpsModalVisible(false);
+              }}
+            >
+              Keep
+            </Button>,
+            <Button
+              key="delete"
+              type="primary"
+              onClick={() => {
+                deleteScenario(scenario.id, true);
+                setClearAloneOpsModalVisible(false);
+              }}
+            >
+              Delete
+            </Button>,
+          ]}
+        >
+          This scenario contains single copies of operations.
+          <br />
+          Choose to <b>keep</b> them or <b>delete</b> them.
         </Modal>
       </div>
     </>
