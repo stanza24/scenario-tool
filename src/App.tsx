@@ -2,26 +2,30 @@ import React from 'react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import shallow from 'zustand/shallow';
 
-import { Header } from './components/Header';
+import { Header } from 'components/Header';
+import { Menu } from './components/Menu';
 import { ScenariosList } from 'components/ScenariosList';
 import { RootStore, useStore } from 'store';
-import { EDroppableId } from './types';
+import { EDroppableId, EDroppableType } from './types';
+import { getDraggableItemIdParts } from 'utils';
 
-import { Button, message } from 'antd';
+import { message } from 'antd';
 
 import styles from './App.module.css';
 
 export const App = () => {
   const [
     scenarios,
-    createScenario,
+    displayedScenariosIds,
+    toggleDisplayScenario,
     moveScenario,
     moveOperation,
     copyOperation,
   ] = useStore(
     (store: RootStore) => [
       store.scenarios,
-      store.createScenario,
+      store.displayedScenariosIds,
+      store.toggleDisplayScenario,
       store.moveScenario,
       store.moveOperation,
       store.copyOperation,
@@ -40,9 +44,32 @@ export const App = () => {
     } = dropConfig;
 
     switch (true) {
-      case type === EDroppableId.SCENARIO_LIST: {
+      case type === EDroppableType.SCENARIO &&
+        sourceDroppableId === EDroppableId.SCENARIO_LIST: {
+        const { draggableId: id } = getDraggableItemIdParts(draggableId);
+
+        if (!displayedScenariosIds.includes(id)) {
+          toggleDisplayScenario(id, dropOrder);
+        } else {
+          const currentOrder = scenarios[id].order;
+
+          if (dropOrder === currentOrder || dropOrder - 1 === currentOrder)
+            return;
+
+          if (dropOrder < currentOrder) {
+            moveScenario(currentOrder, dropOrder);
+          } else {
+            moveScenario(currentOrder, dropOrder - 1);
+          }
+        }
+
+        return;
+      }
+
+      case type === EDroppableType.SCENARIO &&
+        sourceDroppableId === EDroppableId.SCENARIO_TABLE: {
         if (
-          destDroppableId === EDroppableId.SCENARIO_LIST &&
+          destDroppableId === EDroppableId.SCENARIO_TABLE &&
           dragOrder !== dropOrder
         )
           moveScenario(dragOrder, dropOrder);
@@ -50,7 +77,7 @@ export const App = () => {
         return;
       }
 
-      case type === EDroppableId.OPERATION_LIST &&
+      case type === EDroppableType.OPERATION &&
         sourceDroppableId === destDroppableId: {
         if (dragOrder !== dropOrder)
           moveOperation(sourceDroppableId, dragOrder, dropOrder);
@@ -58,7 +85,7 @@ export const App = () => {
         return;
       }
 
-      case type === EDroppableId.OPERATION_LIST &&
+      case type === EDroppableType.OPERATION &&
         sourceDroppableId !== destDroppableId: {
         const opId = draggableId.split(';').pop() as string;
 
@@ -77,14 +104,10 @@ export const App = () => {
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className={styles.container}>
         <Header />
-        <ScenariosList />
-        <Button
-          type="primary"
-          onClick={createScenario}
-          className={styles.addScenario}
-        >
-          Add scenario
-        </Button>
+        <div className={styles.main}>
+          <Menu />
+          <ScenariosList />
+        </div>
       </div>
     </DragDropContext>
   );

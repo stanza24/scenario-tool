@@ -39,6 +39,13 @@
     cursor: grabbing;
 }
 
+.closeButton {
+    font-size: 16px;
+    color: #333333;
+    padding: 4px;
+    border-radius: 4px;
+}
+
 .deleteButton {
     font-size: 16px;
     color: #ff4d4f !important;
@@ -74,11 +81,11 @@
 
 .scenario {
     height: 144px;
+    min-width: 310px;
     display: flex;
     align-items: center;
     padding: 10px 10px;
     border: 1px solid black;
-    margin-right: 10px;
     background-color: #dddddd;
     border-radius: 0 10px 10px 10px;
     position: relative;

@@ -5,8 +5,19 @@
     width: fit-content;
     padding: 10px;
     background: #eeeeee;
+    display: flex;
+    flex-direction: column;
 }
 
-.addScenario {
-    margin-top: 8px;
+.main {
+    display: flex;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.collapse {
+    width: 200px;
+    margin-top: 10px !important;
+    margin-right: 10px !important;
+    height: fit-content;
 }

@@ -1,55 +1,112 @@
+import EventEmitter from 'eventemitter3';
+import React, { useMemo } from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
+import shallow from 'zustand/shallow';
 
 import { Scenario } from './Scenario';
+import { ScenarioTableDroppableController } from './ScenarioTableDroppableController';
 import { RootStore, useStore } from 'store';
-import { EDroppableId, IScenario } from 'types';
+import { EDroppableId, EDroppableType, IScenario } from 'types';
+
+import { Button } from 'antd';
 
 import scenarioStyles from './Scenario.module.css';
 import styles from './ScenariosList.module.css';
 import classNames from 'classnames';
 
+export enum ScenarioTableEvents {
+  MENU_ITEM_DRAGGING_OVER = 'MENU_ITEM_DRAGGING_OVER',
+  MENU_ITEM_DRAGGING_CLEAR = 'MENU_ITEM_DRAGGING_CLEAR',
+}
+
+export const scenarioTableEventEmitter =
+  new EventEmitter<ScenarioTableEvents>();
+
 export const ScenariosList = () => {
-  const scenarios = useStore((store: RootStore) => store.scenarios);
+  const [
+    scenarios,
+    displayedScenariosIds,
+    collapsedScenariosIds,
+    createScenario,
+  ] = useStore(
+    (store: RootStore) => [
+      store.scenarios,
+      store.displayedScenariosIds,
+      store.collapsedScenariosIds,
+      store.createScenario,
+    ],
+    shallow
+  );
+
+  const sortedDisplayedScenarios = useMemo(
+    () =>
+      Object.values(scenarios)
+        .filter((sc) => displayedScenariosIds.includes(sc.id))
+        .sort((sc1, sc2) => sc1.order - sc2.order),
+    [scenarios, displayedScenariosIds]
+  );
+
+  // TODO
+  const getListStyle = (isDraggingOver: boolean) => ({
+    background: isDraggingOver ? 'lightblue' : 'transparent',
+  });
 
   return (
-    <Droppable
-      droppableId={EDroppableId.SCENARIO_LIST}
-      type={EDroppableId.SCENARIO_LIST}
-    >
-      {(droppableProvided) => (
-        <div ref={droppableProvided.innerRef} className={styles.scenariosList}>
-          {Object.values(scenarios)
-            .sort((sc1, sc2) => sc1.order - sc2.order)
-            .map((scenario: IScenario, index: number) => (
-              <Draggable
-                key={scenario.id}
-                draggableId={scenario.id}
-                index={index}
-              >
-                {(draggableProvided, draggableSnapshot) => (
-                  <div
-                    ref={draggableProvided.innerRef}
-                    {...draggableProvided.draggableProps}
-                    style={draggableProvided.draggableProps.style}
-                    className={classNames(
-                      scenarioStyles.scenarioDraggableContainer,
-                      {
-                        [scenarioStyles.scenarioDraggingContainer]:
-                          draggableSnapshot.isDragging,
-                      }
-                    )}
-                  >
-                    <Scenario
-                      scenario={scenario}
-                      dragHandleProps={draggableProvided.dragHandleProps}
-                    />
-                  </div>
-                )}
-              </Draggable>
-            ))}
-          {droppableProvided.placeholder}
-        </div>
-      )}
-    </Droppable>
+    <div className={styles.container}>
+      <Button
+        type="primary"
+        onClick={createScenario}
+        className={styles.addScenario}
+      >
+        Add scenario
+      </Button>
+      <Droppable
+        droppableId={EDroppableId.SCENARIO_TABLE}
+        type={EDroppableType.SCENARIO}
+      >
+        {(droppableProvided, droppableSnapshot) => (
+          <div
+            ref={droppableProvided.innerRef}
+            className={styles.scenariosList}
+            style={getListStyle(droppableSnapshot.isDraggingOver)}
+          >
+            <ScenarioTableDroppableController snapshot={droppableSnapshot} />
+            {sortedDisplayedScenarios.map(
+              (scenario: IScenario, index: number) => (
+                <Draggable
+                  key={scenario.id}
+                  draggableId={scenario.id}
+                  index={index}
+                >
+                  {(draggableProvided, draggableSnapshot) => (
+                    <div
+                      ref={draggableProvided.innerRef}
+                      {...draggableProvided.draggableProps}
+                      style={draggableProvided.draggableProps.style}
+                      className={classNames(
+                        scenarioStyles.scenarioDraggableContainer,
+                        {
+                          [scenarioStyles.scenarioDraggingContainer]:
+                            draggableSnapshot.isDragging,
+                        }
+                      )}
+                    >
+                      <Scenario
+                        collapsed={collapsedScenariosIds.some(
+                          (id) => scenario.id === id
+                        )}
+                        scenario={scenario}
+                        dragHandleProps={draggableProvided.dragHandleProps}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              )
+            )}
+            {droppableProvided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </div>
   );
 };

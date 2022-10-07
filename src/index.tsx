@@ -10,3 +10,6 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(<App />);
+
+// @ts-ignore
+window['__react-beautiful-dnd-disable-dev-warnings'] = true;

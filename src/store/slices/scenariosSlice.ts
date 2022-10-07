@@ -2,13 +2,14 @@ import { v4 as uuidV4 } from 'uuid';
 import { GetState } from 'zustand';
 
 import { RootStore, StoreSet } from '../';
+import { OP_COLORS } from 'const';
 import { IOperation, IScenario } from 'types';
-import { isOperationValid, isScenarioValid } from 'utils/isScenarioValid';
-import { OP_COLORS } from '../../components/const';
+import { isOperationValid, isScenarioValid } from 'utils';
 
 export interface ScenariosSlice {
   scenarios: Record<string, IScenario>;
   collapsedScenariosIds: string[];
+  displayedScenariosIds: string[];
   clearScenarios: () => void;
   createScenario: () => void;
   importScenarios: ({
@@ -22,6 +23,7 @@ export interface ScenariosSlice {
   deleteScenario: (scenarioId: string, clearAloneOps: boolean) => void;
   moveScenario: (fromIndex: number, toIndex: number) => void;
   toggleCollapseScenario: (id: string) => void;
+  toggleDisplayScenario: (id: string, order?: number) => void;
 }
 
 export const createScenariosSlice = (
@@ -30,9 +32,12 @@ export const createScenariosSlice = (
 ): ScenariosSlice => ({
   scenarios: {},
   collapsedScenariosIds: [],
+  displayedScenariosIds: [],
   clearScenarios: () => {
     set((state) => {
       state.scenarios = {};
+      state.collapsedScenariosIds = [];
+      state.displayedScenariosIds = [];
       state.operations = {};
       state.colors = OP_COLORS.reduce(
         (acc, color) => ({ ...acc, [color]: true }),
@@ -51,6 +56,7 @@ export const createScenariosSlice = (
       };
 
       state.scenarios[newScenario.id] = newScenario;
+      state.displayedScenariosIds.push(newScenario.id);
     });
   },
   importScenarios: ({
@@ -153,6 +159,23 @@ export const createScenariosSlice = (
         state.collapsedScenariosIds.push(id);
       } else {
         state.collapsedScenariosIds.splice(index, 1);
+      }
+    });
+  },
+  toggleDisplayScenario: (id: string, order?: number) => {
+    set((state) => {
+      const index = state.displayedScenariosIds.findIndex(
+        (scId) => scId === id
+      );
+
+      if (index === -1) {
+        if (order === undefined) {
+          state.displayedScenariosIds.push(id);
+        } else {
+          state.displayedScenariosIds.splice(order, 0, id);
+        }
+      } else {
+        state.displayedScenariosIds.splice(index, 1);
       }
     });
   },

@@ -9,7 +9,7 @@ import shallow from 'zustand/shallow';
 import { ScenarioOperation } from './ScenarioOperation';
 import { RootStore, useStore } from 'store';
 import {
-  EDroppableId,
+  EDroppableType,
   IOperation,
   IOperationWithResult,
   IScenario,
@@ -18,6 +18,7 @@ import { calculateResultWithRate } from 'utils';
 
 import {
   ArrowRightOutlined,
+  CloseOutlined,
   DeleteOutlined,
   HolderOutlined,
   PlusOutlined,
@@ -33,9 +34,10 @@ import classNames from 'classnames';
 interface Props {
   scenario: IScenario;
   dragHandleProps?: DraggableProvidedDragHandleProps;
+  collapsed: boolean;
 }
 
-export const Scenario = ({ scenario, dragHandleProps }: Props) => {
+export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
   const [deleteScenarioModalVisible, setDeleteScenarioModalVisible] =
     useState<boolean>(false);
 
@@ -43,20 +45,20 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
     useState<boolean>(false);
 
   const [
-    collapsedScenariosIds,
     deleteScenario,
     updateScenario,
     toggleCollapseScenario,
+    toggleDisplayScenario,
     operations,
     createOperation,
     updateOperation,
     removeOperationFromScenario,
   ] = useStore(
     (store: RootStore) => [
-      store.collapsedScenariosIds,
       store.deleteScenario,
       store.updateScenario,
       store.toggleCollapseScenario,
+      store.toggleDisplayScenario,
       store.operations,
       store.createOperation,
       store.updateOperation,
@@ -65,8 +67,7 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
     shallow
   );
 
-  const isCollapsed = collapsedScenariosIds.some((id) => scenario.id === id);
-  const CollapseIcon = isCollapsed
+  const CollapseIcon = collapsed
     ? VerticalAlignBottomOutlined
     : VerticalAlignTopOutlined;
 
@@ -122,6 +123,8 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
     });
   };
 
+  const handleToggleDisplayScenario = () => toggleDisplayScenario(scenario.id);
+
   const handleToggleCollapseScenario = () =>
     toggleCollapseScenario(scenario.id);
 
@@ -173,12 +176,16 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
     <>
       <div
         className={classNames(styles.buttonsExtra, {
-          [styles.buttonsExtraCollapsed]: isCollapsed,
+          [styles.buttonsExtraCollapsed]: collapsed,
         })}
       >
         <HolderOutlined
           {...(dragHandleProps || {})}
           className={styles.dragButton}
+        />
+        <CloseOutlined
+          onClick={handleToggleDisplayScenario}
+          className={styles.closeButton}
         />
         <DeleteOutlined
           onClick={() => setDeleteScenarioModalVisible(true)}
@@ -188,7 +195,7 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
           onClick={handleToggleCollapseScenario}
           className={styles.collapseButton}
         />
-        {isCollapsed ? (
+        {collapsed ? (
           <Typography.Text strong className={styles.scenarioNameText}>
             {scenario.name}
           </Typography.Text>
@@ -204,7 +211,7 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
       </div>
       <div
         className={classNames(styles.scenario, {
-          [styles.scenarioCollapsed]: isCollapsed,
+          [styles.scenarioCollapsed]: collapsed,
         })}
       >
         <Input
@@ -219,7 +226,7 @@ export const Scenario = ({ scenario, dragHandleProps }: Props) => {
         <ArrowRightOutlined className={styles.operationIcon} />
         <Droppable
           droppableId={scenario.id}
-          type={EDroppableId.OPERATION_LIST}
+          type={EDroppableType.OPERATION}
           direction="horizontal"
         >
           {(droppableProvided, droppableSnapshot) => (

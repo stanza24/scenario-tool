@@ -2,7 +2,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { GetState } from 'zustand';
 
 import { RootStore, StoreSet } from '../';
-import { OP_COLORS } from 'components/const';
+import { OP_COLORS } from 'const';
 import { ERateType, IOperation } from 'types';
 
 export interface OperationsSlice {
