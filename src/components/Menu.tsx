@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Draggable,
   DraggableStateSnapshot,
@@ -8,18 +8,26 @@ import {
 } from 'react-beautiful-dnd';
 import shallow from 'zustand/shallow';
 
-import { Scenario } from './Scenario';
-import {
-  scenarioTableEventEmitter,
-  ScenarioTableEvents,
-} from './ScenariosList';
-import { ScenarioListItem } from './ScenarioListItem';
+import { ScenarioMenuItem } from './ScenarioMenuItem';
+import { ScenarioOperation } from './ScenarioOperation';
 import { RootStore, useStore } from 'store';
-import { EDroppableId, EDroppableType, IScenario } from 'types';
+import { EDroppableId, EDroppableType } from 'types';
 
-import { Collapse } from 'antd';
+import {
+  ApiOutlined,
+  BranchesOutlined,
+  HolderOutlined,
+  InteractionOutlined,
+} from '@ant-design/icons';
+import { Button, Modal, Space, Tree, Typography } from 'antd';
 
-import styles from '../App.module.css';
+import styles from './Menu.module.css';
+
+enum EDeletingType {
+  SCENARIOS,
+  OPERATIONS,
+  BOTH,
+}
 
 const getDraggableStyle = (
   snapshot: DraggableStateSnapshot,
@@ -33,119 +41,353 @@ const getDraggableStyle = (
   return styles;
 };
 
-export const Menu = () => {
-  const [activeMenu, setActiveMenu] = useState<string[]>([]);
-  const [draggingOverTable, setDraggingOverTable] = useState<string | null>(
-    null
-  );
+const getMassDeleteModalText = (deletingType: EDeletingType | null) => {
+  switch (deletingType) {
+    case EDeletingType.SCENARIOS:
+      return (
+        <span>
+          Do you want to <b>delete</b> selected scenarios?
+          <br />
+        </span>
+      );
+    case EDeletingType.OPERATIONS:
+      return (
+        <span>
+          Do you want to <b>delete</b> selected operations?
+          <br />
+          All linked nodes in scenarios will be also deleted.
+        </span>
+      );
+    case EDeletingType.BOTH:
+      return (
+        <span>
+          Do you want to <b>delete</b> selected entities?
+          <br />
+          All linked nodes in remaining scenarios will be also deleted.
+        </span>
+      );
+  }
+};
 
-  const [scenarios, displayedScenariosIds] = useStore(
-    (store: RootStore) => [store.scenarios, store.displayedScenariosIds],
+export const Menu = () => {
+  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [selecting, setSelecting] = useState<boolean>(false);
+  const [checkedKeys, setCheckedKeys] = useState<string[]>([]);
+
+  const [massDeleteModalVisible, setMassDeleteModalVisible] =
+    useState<boolean>(false);
+  const [deletingType, setDeletingType] = useState<EDeletingType | null>(null);
+
+  const [
+    scenarios,
+    displayedScenariosIds,
+    deleteScenario,
+    operations,
+    deleteOperation,
+  ] = useStore(
+    (store: RootStore) => [
+      store.scenarios,
+      store.displayedScenariosIds,
+      store.deleteScenario,
+      store.operations,
+      store.deleteOperation,
+    ],
     shallow
   );
-  const sortedScenarios = useMemo(
-    () => Object.values(scenarios).sort((sc1, sc2) => sc1.order - sc2.order),
-    [scenarios]
-  );
 
-  const onChange = (keys: string | string[]) => {
-    setActiveMenu(Array.isArray(keys) ? keys : [keys]);
+  const toggleExpandTreeItem = (item: string) => {
+    setExpandedKeys((keys) => {
+      const selectedKeyIndex = keys.indexOf(item);
+
+      if (selectedKeyIndex === -1) {
+        return [...keys, item];
+      } else {
+        return [
+          ...keys.slice(0, selectedKeyIndex),
+          ...keys.slice(selectedKeyIndex + 1),
+        ];
+      }
+    });
   };
 
-  const handleShowDraggingOverTable = useCallback(
-    (id: string) => setDraggingOverTable(id),
-    []
+  const treeData = useMemo(
+    () => [
+      {
+        key: 'scenarios',
+        title: (
+          <Typography.Text
+            strong
+            onClick={() => toggleExpandTreeItem('scenarios')}
+          >
+            Scenarios
+          </Typography.Text>
+        ),
+        icon: <BranchesOutlined />,
+        children: Object.values(scenarios).map((scenario, index) => ({
+          key: `${EDroppableType.SCENARIO}.${scenario.id}`,
+          selectable: false,
+          title: (
+            <Droppable
+              isDropDisabled
+              droppableId={EDroppableId.SCENARIO_LIST}
+              type={EDroppableType.SCENARIO}
+            >
+              {(droppableProvided) => (
+                <div ref={droppableProvided.innerRef}>
+                  <Draggable
+                    isDragDisabled={displayedScenariosIds.includes(scenario.id)}
+                    key={scenario.id}
+                    draggableId={EDroppableId.SCENARIO_LIST + '.' + scenario.id}
+                    index={index}
+                  >
+                    {(draggableProvided, draggableSnapshot) => (
+                      <>
+                        <div
+                          ref={draggableProvided.innerRef}
+                          {...draggableProvided.draggableProps}
+                          style={getDraggableStyle(
+                            draggableSnapshot,
+                            draggableProvided.draggableProps.style
+                          )}
+                        >
+                          {draggableSnapshot.isDragging ? (
+                            <ScenarioMenuItem
+                              name={scenario.name || '-'}
+                              dragHandleProps={
+                                draggableProvided.dragHandleProps
+                              }
+                            />
+                          ) : (
+                            <span>
+                              {displayedScenariosIds.includes(scenario.id) ? (
+                                <span className={styles.dragButtonStub} />
+                              ) : (
+                                <HolderOutlined
+                                  {...draggableProvided.dragHandleProps}
+                                  className={styles.dragButton}
+                                />
+                              )}
+                              {scenario.name}
+                            </span>
+                          )}
+                        </div>
+                        {draggableSnapshot.isDragging && (
+                          <span>
+                            <HolderOutlined className={styles.dragButton} />
+                            {scenario.name}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Draggable>
+                </div>
+              )}
+            </Droppable>
+          ),
+        })),
+      },
+      {
+        key: 'operations',
+        title: (
+          <Typography.Text
+            strong
+            onClick={() => toggleExpandTreeItem('operations')}
+          >
+            Operations
+          </Typography.Text>
+        ),
+        icon: <InteractionOutlined />,
+        children: Object.values(operations).map((operation, index) => ({
+          key: `${EDroppableType.OPERATION}.${operation.id}`,
+          title: (
+            <Droppable
+              isDropDisabled
+              droppableId={EDroppableId.OPERATION_LIST}
+              type={EDroppableType.OPERATION}
+            >
+              {(droppableProvided) => (
+                <div ref={droppableProvided.innerRef}>
+                  <Draggable
+                    key={operation.id}
+                    draggableId={
+                      EDroppableId.OPERATION_LIST + '.' + operation.id
+                    }
+                    index={index}
+                  >
+                    {(draggableProvided, draggableSnapshot) => (
+                      <>
+                        <div
+                          ref={draggableProvided.innerRef}
+                          {...draggableProvided.draggableProps}
+                          style={getDraggableStyle(
+                            draggableSnapshot,
+                            draggableProvided.draggableProps.style
+                          )}
+                        >
+                          {draggableSnapshot.isDragging ? (
+                            <ScenarioOperation
+                              dragging
+                              // @ts-ignore
+                              operation={{
+                                ...operation,
+                                result: 0,
+                              }}
+                            />
+                          ) : (
+                            <Typography.Text>
+                              <HolderOutlined
+                                {...draggableProvided.dragHandleProps}
+                                className={styles.dragButton}
+                              />
+                              <ApiOutlined
+                                className={styles.operationColorIcon}
+                                style={{ color: operation.color || '#000000' }}
+                              />
+                              {operation.name}
+                            </Typography.Text>
+                          )}
+                        </div>
+                        {draggableSnapshot.isDragging && (
+                          <Typography.Text>
+                            <HolderOutlined className={styles.dragButton} />
+                            <ApiOutlined
+                              className={styles.operationColorIcon}
+                              style={{ color: operation.color || '#000000' }}
+                            />
+                            {operation.name}
+                          </Typography.Text>
+                        )}
+                      </>
+                    )}
+                  </Draggable>
+                </div>
+              )}
+            </Droppable>
+          ),
+        })),
+      },
+    ],
+    [scenarios, displayedScenariosIds, operations]
   );
 
-  const handleClearDraggingOverTable = useCallback(
-    () => setDraggingOverTable(null),
-    []
-  );
+  const handleMassDeleting = () => {
+    let deletingScenarios = 0;
+    let deletingOperations = 0;
+    checkedKeys.forEach((key) => {
+      const [type] = key.split('.');
 
-  useEffect(() => {
-    scenarioTableEventEmitter.on(
-      ScenarioTableEvents.MENU_ITEM_DRAGGING_OVER,
-      handleShowDraggingOverTable
-    );
+      if (type === EDroppableType.SCENARIO) deletingScenarios++;
+      else if (type === EDroppableType.OPERATION) deletingOperations++;
+    });
 
-    scenarioTableEventEmitter.on(
-      ScenarioTableEvents.MENU_ITEM_DRAGGING_CLEAR,
-      handleClearDraggingOverTable
-    );
+    setMassDeleteModalVisible(true);
+    switch (true) {
+      case deletingScenarios > 0 && deletingOperations === 0: {
+        return setDeletingType(EDeletingType.SCENARIOS);
+      }
+      case deletingScenarios === 0 && deletingOperations > 0: {
+        return setDeletingType(EDeletingType.OPERATIONS);
+      }
+      case deletingScenarios > 0 && deletingOperations > 0: {
+        return setDeletingType(EDeletingType.BOTH);
+      }
+    }
+  };
 
-    return () => {
-      scenarioTableEventEmitter.off(
-        ScenarioTableEvents.MENU_ITEM_DRAGGING_OVER,
-        handleShowDraggingOverTable
-      );
+  const handleDeleteSelected = () => {
+    checkedKeys.forEach((key) => {
+      const [type, id] = key.split('.');
+      if (type === EDroppableType.SCENARIO) deleteScenario(id);
+      else if (type === EDroppableType.OPERATION) deleteOperation(id);
+    });
 
-      scenarioTableEventEmitter.off(
-        ScenarioTableEvents.MENU_ITEM_DRAGGING_CLEAR,
-        handleClearDraggingOverTable
-      );
-    };
-  }, [handleShowDraggingOverTable, handleClearDraggingOverTable]);
+    setCheckedKeys([]);
+    setTimeout(() => setSelecting(false));
+  };
 
   return (
-    <Collapse
-      activeKey={activeMenu}
-      onChange={onChange}
-      className={styles.collapse}
-    >
-      <Collapse.Panel header="Scenarios" key="scenarios">
-        <Droppable
-          isDropDisabled
-          droppableId={EDroppableId.SCENARIO_LIST}
-          type={EDroppableType.SCENARIO}
-        >
-          {(droppableProvided) => (
-            <div
-              ref={droppableProvided.innerRef}
-              className={styles.scenariosList}
+    <div className={styles.collapse}>
+      <div className={styles.treeHeader}>
+        {selecting ? (
+          <Space>
+            <Button
+              type="default"
+              size="small"
+              onClick={() => {
+                setCheckedKeys([]);
+                // Без этого хака чек не успевает сброситься и ант рисует последний активный стейт
+                setTimeout(() => setSelecting(false));
+              }}
             >
-              {sortedScenarios.map((scenario: IScenario, index: number) => (
-                <Draggable
-                  key={scenario.id}
-                  draggableId={EDroppableId.SCENARIO_LIST + '.' + scenario.id}
-                  index={index}
-                >
-                  {(draggableProvided, draggableSnapshot) => (
-                    <>
-                      <div
-                        ref={draggableProvided.innerRef}
-                        {...draggableProvided.draggableProps}
-                        style={getDraggableStyle(
-                          draggableSnapshot,
-                          draggableProvided.draggableProps.style
-                        )}
-                      >
-                        {draggingOverTable === scenario.id ? (
-                          <Scenario
-                            collapsed
-                            scenario={scenario}
-                            dragHandleProps={draggableProvided.dragHandleProps}
-                          />
-                        ) : (
-                          <ScenarioListItem
-                            name={scenario.name}
-                            dragHandleProps={draggableProvided.dragHandleProps}
-                          />
-                        )}
-                      </div>
-                      {draggableSnapshot.isDragging && (
-                        <ScenarioListItem name={scenario.name} />
-                      )}
-                    </>
-                  )}
-                </Draggable>
-              ))}
-            </div>
-          )}
-        </Droppable>
-      </Collapse.Panel>
-      <Collapse.Panel header="Operations" key="operations">
-        <p>123</p>
-      </Collapse.Panel>
-    </Collapse>
+              Cancel
+            </Button>
+            <Button
+              danger
+              disabled={checkedKeys.length === 0}
+              type="primary"
+              size="small"
+              onClick={handleMassDeleting}
+            >
+              Delete
+            </Button>
+          </Space>
+        ) : (
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => {
+              setSelecting(true);
+              setExpandedKeys(['scenarios', 'operations']);
+            }}
+          >
+            Select
+          </Button>
+        )}
+      </div>
+      <Tree
+        showIcon
+        checkable={selecting}
+        checkedKeys={checkedKeys}
+        selectable={false}
+        onExpand={(keys) => setExpandedKeys(keys as string[])}
+        expandedKeys={expandedKeys}
+        treeData={treeData}
+        onCheck={(keys) =>
+          setCheckedKeys(
+            (keys as string[]).filter(
+              (key) => key !== 'scenarios' && key !== 'operations'
+            )
+          )
+        }
+        rootClassName={styles.tree}
+      />
+      <Modal
+        open={massDeleteModalVisible}
+        onCancel={() => {
+          setMassDeleteModalVisible(false);
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            type="default"
+            onClick={() => setMassDeleteModalVisible(false)}
+          >
+            Cancel
+          </Button>,
+          <Button
+            key="create"
+            type="primary"
+            onClick={() => {
+              handleDeleteSelected();
+              setMassDeleteModalVisible(false);
+            }}
+          >
+            Delete
+          </Button>,
+        ]}
+      >
+        {getMassDeleteModalText(deletingType)}
+      </Modal>
+    </div>
   );
 };

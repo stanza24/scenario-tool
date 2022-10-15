@@ -14,10 +14,3 @@
     flex-grow: 1;
     width: 100%;
 }
-
-.collapse {
-    width: 200px;
-    margin-top: 10px !important;
-    margin-right: 10px !important;
-    height: fit-content;
-}

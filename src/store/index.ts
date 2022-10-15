@@ -5,19 +5,21 @@ import { devtools, subscribeWithSelector } from 'zustand/middleware';
 
 import { debounce } from 'debounce';
 
+import { ColorsSlice, createColorsSlice } from './slices/colorsSlice';
 import {
   createOperationsSlice,
   OperationsSlice,
 } from './slices/operationsSlice';
 import { createScenariosSlice, ScenariosSlice } from './slices/scenariosSlice';
 
-export type RootStore = ScenariosSlice & OperationsSlice;
+export type RootStore = ScenariosSlice & OperationsSlice & ColorsSlice;
 
 export type StoreSet = (fn: (draft: WritableDraft<RootStore>) => void) => void;
 
 const store = (set: StoreSet, get: GetState<RootStore>) => ({
   ...createScenariosSlice(set, get),
   ...createOperationsSlice(set, get),
+  ...createColorsSlice(set, get),
   ...JSON.parse(localStorage.getItem('state') || '{}'),
 });
 

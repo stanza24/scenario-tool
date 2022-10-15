@@ -2,30 +2,28 @@ import { v4 as uuidV4 } from 'uuid';
 import { GetState } from 'zustand';
 
 import { RootStore, StoreSet } from '../';
-import { OP_COLORS } from 'const';
-import { ERateType, IOperation } from 'types';
+import { IOperation } from 'types';
 
 export interface OperationsSlice {
   operations: Record<string, IOperation>;
-  createOperation: (scenarioId: string) => void;
-  updateOperation: (operation: IOperation) => void;
-  removeOperationFromScenario: (
+  createOperation: (
     scenarioId: string,
-    operationId: string
+    toIndex?: number,
+    cloningId?: string
   ) => void;
-  moveOperation: (
+  updateOperation: (operation: IOperation) => void;
+  removeNodeFromScenario: (scenarioId: string, operationId: string) => void;
+  reorderNode: (
     scenarioId: string,
     startIndex: number,
     toIndex: number
   ) => void;
-  copyOperation: (
+  applyOperationAsNode: (
     scenarioId: string,
     operationId: string,
     toIndex: number
   ) => void;
-  colors: Record<string, boolean>;
-  getFreeColor: () => string | undefined;
-  releaseColor: (color: string) => void;
+  deleteOperation: (operationId: string) => void;
 }
 
 export const createOperationsSlice = (
@@ -33,71 +31,71 @@ export const createOperationsSlice = (
   get: GetState<RootStore>
 ): OperationsSlice => ({
   operations: {},
-  createOperation: (scenarioId: string) => {
-    set((state) => {
-      const operation = {
-        id: uuidV4(),
-        name: '',
-        rate: '1',
-        rateType: ERateType.MUL,
-        usage: 1,
-        color: null,
-      };
+  createOperation: (scenarioId: string, toIndex?: number) => {
+    const operation: IOperation = {
+      id: uuidV4(),
+      usage: 1,
+      color: null,
+      name: '-',
+      rate: '1',
+    };
 
-      state.operations[operation.id] = operation;
-
-      state.scenarios[scenarioId].operations.push(operation.id);
-    });
-  },
-  updateOperation: (operation) => {
     set((state) => {
       state.operations[operation.id] = operation;
     });
+
+    get().attachNode(scenarioId, operation.id, toIndex);
   },
-  removeOperationFromScenario: (scenarioId: string, operationId: string) => {
+  updateOperation: (operation: IOperation) => {
     set((state) => {
-      const opIndex =
-        state.scenarios[scenarioId].operations.indexOf(operationId);
-
-      if (opIndex === -1) return;
-
-      state.scenarios[scenarioId].operations.splice(opIndex, 1);
-
-      const op = state.operations[operationId];
-
-      switch (op.usage) {
-        case 1: {
-          delete state.operations[operationId];
-          return;
-        }
-        case 2: {
-          op.color && state.releaseColor(op.color);
-          op.color = null;
-          op.usage = 1;
-          return;
-        }
-        default: {
-          op.usage = op.usage - 1;
-        }
-      }
+      state.operations[operation.id] = operation;
     });
   },
-  moveOperation: (scenarioId: string, fromIndex: number, toIndex: number) => {
+  removeNodeFromScenario: (scenarioId: string, operationId: string) => {
+    const opIndex = get().scenarios[scenarioId].nodes.findIndex(
+      (node) => node.opId === operationId
+    );
+
+    if (opIndex === -1) return;
+
+    set((state) => {
+      state.scenarios[scenarioId].nodes.splice(opIndex, 1);
+    });
+
+    const op = get().operations[operationId];
+
+    if (op.usage === 2 && op.color) {
+      get().releaseColor(op.color);
+
+      set((state) => {
+        state.operations[operationId].color = null;
+      });
+    }
+
+    set((state) => {
+      state.operations[operationId].usage = op.usage - 1;
+    });
+  },
+  reorderNode: (scenarioId: string, fromIndex: number, toIndex: number) => {
     set((state) => {
       const scenario = state.scenarios[scenarioId];
       if (!scenario) return;
 
-      const [removed] = scenario.operations.splice(fromIndex, 1);
-      scenario.operations.splice(toIndex, 0, removed);
+      const [removed] = scenario.nodes.splice(fromIndex, 1);
+      scenario.nodes.splice(toIndex, 0, removed);
     });
   },
-  copyOperation: (scenarioId: string, operationId: string, toIndex: number) => {
+  applyOperationAsNode: (
+    scenarioId: string,
+    operationId: string,
+    toIndex: number
+  ) => {
+    const scenario = get().scenarios[scenarioId];
+    if (!scenario) return;
+
+    get().attachNode(scenarioId, operationId, toIndex);
+
     set((state) => {
-      const scenario = state.scenarios[scenarioId];
-      if (!scenario) return;
-
-      scenario.operations.splice(toIndex, 0, operationId);
-
       const op = state.operations[operationId];
       op.usage = op.usage + 1;
 
@@ -111,17 +109,21 @@ export const createOperationsSlice = (
       }
     });
   },
-  colors: OP_COLORS.reduce((acc, color) => ({ ...acc, [color]: true }), {}),
-  getFreeColor: () => {
-    for (let color of Object.keys(get().colors)) {
-      if (get().colors[color]) {
-        return color;
+  deleteOperation: (operationId: string) => {
+    Object.values(get().scenarios).forEach((scenario) => {
+      const nodeIndex = scenario.nodes.findIndex(
+        (node) => node.opId === operationId
+      );
+
+      if (nodeIndex !== -1) {
+        set((state) => {
+          state.scenarios[scenario.id].nodes.splice(nodeIndex, 1);
+        });
       }
-    }
-  },
-  releaseColor: (color: string) => {
+    });
+
     set((state) => {
-      state.colors[color] = true;
+      delete state.operations[operationId];
     });
   },
 });

@@ -1,23 +1,37 @@
+/**
+ * Возможные операции в ноде
+ */
 export enum ERateType {
   MUL = 'MUL',
   DIV = 'DIV',
-  ADD_RAW = 'ADD_RAW',
-  SUB_RAW = 'SUB_RAW',
+  ADD = 'ADD',
+  SUB = 'SUB',
   ADD_PERC = 'PLUS_PERC',
   SUB_PERC = 'SUB_PERC',
 }
 
+/**
+ * Модель операции
+ */
 export interface IOperation {
   id: string;
   name: string;
   rate: string;
-  rateType: ERateType;
   usage: number;
   color: string | null;
 }
 
 export interface IOperationWithResult extends IOperation {
+  rateType: ERateType;
   result: number;
+}
+
+/**
+ * Звено связки
+ */
+export interface IScenarioNode {
+  opId: string;
+  rateType: ERateType;
 }
 
 export interface IScenario {
@@ -25,5 +39,5 @@ export interface IScenario {
   order: number;
   name?: string;
   init: string;
-  operations: string[];
+  nodes: IScenarioNode[];
 }

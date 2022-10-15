@@ -3,7 +3,7 @@ import { GetState } from 'zustand';
 
 import { RootStore, StoreSet } from '../';
 import { OP_COLORS } from 'const';
-import { IOperation, IScenario } from 'types';
+import { ERateType, IOperation, IScenario, IScenarioNode } from 'types';
 import { isOperationValid, isScenarioValid } from 'utils';
 
 export interface ScenariosSlice {
@@ -20,10 +20,12 @@ export interface ScenariosSlice {
     operations: IOperation[];
   }) => void;
   updateScenario: (scenario: IScenario) => void;
-  deleteScenario: (scenarioId: string, clearAloneOps: boolean) => void;
+  deleteScenario: (scenarioId: string) => void;
   moveScenario: (fromIndex: number, toIndex: number) => void;
   toggleCollapseScenario: (id: string) => void;
   toggleDisplayScenario: (id: string, order?: number) => void;
+  attachNode: (scenarioId: string, opId: string, toIndex?: number) => void;
+  updateNode: (scenarioId: string, node: IScenarioNode) => void;
 }
 
 export const createScenariosSlice = (
@@ -47,12 +49,12 @@ export const createScenariosSlice = (
   },
   createScenario: () => {
     set((state) => {
-      const newScenario = {
+      const newScenario: IScenario = {
         id: uuidV4(),
         order: Object.keys(state.scenarios).length,
-        name: 'Scenario',
+        name: 'Default name',
         init: '0',
-        operations: [],
+        nodes: [],
       };
 
       state.scenarios[newScenario.id] = newScenario;
@@ -85,34 +87,24 @@ export const createScenariosSlice = (
       state.scenarios[scenario.id] = scenario;
     });
   },
-  deleteScenario: (scenarioId: string, clearAloneOps: boolean) => {
-    set((state) => {
-      state.scenarios[scenarioId].operations.forEach((opId) => {
-        switch (true) {
-          case state.operations[opId].usage > 2: {
-            state.operations[opId].usage = state.operations[opId].usage - 1;
-            return;
-          }
-          case state.operations[opId].usage === 2: {
-            state.operations[opId].usage = 1;
+  deleteScenario: (scenarioId: string) => {
+    get().scenarios[scenarioId].nodes.forEach((node) => {
+      const op = get().operations[node.opId];
 
-            const color = state.operations[opId].color;
-            if (color) state.colors[color] = true;
+      if (op.usage === 2 && op.color) {
+        get().releaseColor(op.color);
 
-            state.operations[opId].color = null;
-            return;
-          }
-          case state.operations[opId].usage === 1 && clearAloneOps: {
-            state.operations[opId].usage = state.operations[opId].usage - 1;
-            delete state.operations[opId];
-            return;
-          }
-          case state.operations[opId].usage === 1 && !clearAloneOps: {
-            delete state.operations[opId];
-          }
-        }
+        set((state) => {
+          state.operations[node.opId].color = null;
+        });
+      }
+
+      set((state) => {
+        state.operations[node.opId].usage = op.usage - 1;
       });
+    });
 
+    set((state) => {
       delete state.scenarios[scenarioId];
     });
   },
@@ -176,6 +168,31 @@ export const createScenariosSlice = (
         }
       } else {
         state.displayedScenariosIds.splice(index, 1);
+      }
+    });
+  },
+  attachNode: (scenarioId: string, opId: string, toIndex?: number) => {
+    set((state) => {
+      const node = {
+        opId,
+        rateType: ERateType.MUL,
+      };
+
+      if (toIndex) {
+        state.scenarios[scenarioId].nodes.splice(toIndex, 0, node);
+      } else {
+        state.scenarios[scenarioId].nodes.push(node);
+      }
+    });
+  },
+  updateNode: (scenarioId: string, node: IScenarioNode) => {
+    set((state) => {
+      const nodeIndex = state.scenarios[scenarioId]?.nodes.findIndex(
+        (nd) => nd.opId === node.opId
+      );
+
+      if (nodeIndex !== -1) {
+        state.scenarios[scenarioId].nodes[nodeIndex] = node;
       }
     });
   },

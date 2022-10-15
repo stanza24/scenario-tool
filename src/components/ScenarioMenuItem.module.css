@@ -1,5 +1,6 @@
 .item {
     height: 37px;
+    width: 300px;
     padding: 4px;
     display: flex;
     align-items: center;
@@ -18,7 +19,7 @@
     cursor: grab !important;
 }
 
-.scenarioDraggingContainer .dragButton {
+.scenarioDraggingContainer .dragButton, .operationDraggingContainer .dragButton {
     cursor: grabbing;
 }
 

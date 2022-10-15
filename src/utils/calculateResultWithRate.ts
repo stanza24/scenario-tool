@@ -10,9 +10,9 @@ export const calculateResultWithRate = (
       return num * (Number(rate) || 1);
     case ERateType.DIV:
       return num / (Number(rate) || 1);
-    case ERateType.ADD_RAW:
+    case ERateType.ADD:
       return num + (Number(rate) || 1);
-    case ERateType.SUB_RAW:
+    case ERateType.SUB:
       return num - (Number(rate) || 1);
     case ERateType.ADD_PERC:
       return num * (1 + (Number(rate) || 1) / 100);

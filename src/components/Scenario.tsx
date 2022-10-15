@@ -13,6 +13,7 @@ import {
   IOperation,
   IOperationWithResult,
   IScenario,
+  IScenarioNode,
 } from 'types';
 import { calculateResultWithRate } from 'utils';
 
@@ -41,28 +42,27 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
   const [deleteScenarioModalVisible, setDeleteScenarioModalVisible] =
     useState<boolean>(false);
 
-  const [clearAloneOpsModalVisible, setClearAloneOpsModalVisible] =
-    useState<boolean>(false);
-
   const [
     deleteScenario,
     updateScenario,
     toggleCollapseScenario,
     toggleDisplayScenario,
+    updateNode,
     operations,
     createOperation,
     updateOperation,
-    removeOperationFromScenario,
+    removeNodeFromScenario,
   ] = useStore(
     (store: RootStore) => [
       store.deleteScenario,
       store.updateScenario,
       store.toggleCollapseScenario,
       store.toggleDisplayScenario,
+      store.updateNode,
       store.operations,
       store.createOperation,
       store.updateOperation,
-      store.removeOperationFromScenario,
+      store.removeNodeFromScenario,
     ],
     shallow
   );
@@ -74,14 +74,15 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
   const operationsWithResult: IOperationWithResult[] = useMemo(() => {
     const ops: IOperationWithResult[] = [];
 
-    for (let opId of scenario.operations) {
-      const operation = operations[opId];
+    for (let node of scenario.nodes) {
+      const operation = operations[node.opId];
 
       if (operation) {
         ops.push({
           ...operation,
+          rateType: node.rateType,
           result: calculateResultWithRate(
-            operation.rateType,
+            node.rateType,
             operation.rate,
             ops.at(-1)?.result || Number(scenario.init) || 0
           ),
@@ -90,7 +91,7 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
     }
 
     return ops;
-  }, [operations, scenario.operations, scenario.init]);
+  }, [operations, scenario.nodes, scenario.init]);
 
   const handleChangeInit = ({
     target: { value },
@@ -100,20 +101,25 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
       init: value || '',
     });
 
-  const handleAddOperation = (): void => createOperation(scenario.id);
-
   const handleDeleteOperation = useCallback(
     (operationId: string): void => {
-      removeOperationFromScenario(scenario.id, operationId);
+      removeNodeFromScenario(scenario.id, operationId);
     },
-    [scenario.id]
+    [scenario.id, removeNodeFromScenario]
   );
 
   const handleUpdateOperation = useCallback(
     (operation: IOperation): void => {
       updateOperation(operation);
     },
-    [scenario.id, updateOperation]
+    [updateOperation]
+  );
+
+  const handleUpdateNode = useCallback(
+    (node: IScenarioNode): void => {
+      updateNode(scenario.id, node);
+    },
+    [scenario.id, updateNode]
   );
 
   const handleFixDecimals = () => {
@@ -144,18 +150,6 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
         ...scenario,
         name: 'Scenario',
       });
-  };
-
-  const handleAskToRemoveOperations = () => {
-    const hasAloneOps = scenario.operations.some(
-      (opId) => operations[opId]?.usage === 1
-    );
-
-    if (hasAloneOps) {
-      setClearAloneOpsModalVisible(true);
-    } else {
-      deleteScenario(scenario.id, false);
-    }
   };
 
   const renderSpread = () => {
@@ -241,7 +235,7 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
               {operationsWithResult.map((operation, index) => (
                 <Draggable
                   key={operation.id}
-                  draggableId={`${scenario.id};${operation.id}`}
+                  draggableId={`${scenario.id}.${operation.id}`}
                   index={index}
                 >
                   {(draggableProvided, draggableSnapshot) => (
@@ -259,9 +253,14 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
                     >
                       <ScenarioOperation
                         key={operation.id}
+                        dragging={
+                          droppableSnapshot.isDraggingOver ||
+                          draggableSnapshot.isDragging
+                        }
                         operation={operation}
                         deleteOperation={handleDeleteOperation}
                         updateOperation={handleUpdateOperation}
+                        updateNode={handleUpdateNode}
                         dragHandleProps={draggableProvided.dragHandleProps}
                       />
                     </div>
@@ -274,7 +273,7 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
         </Droppable>
         <Button
           icon={<PlusOutlined />}
-          onClick={handleAddOperation}
+          onClick={() => createOperation(scenario.id)}
           className={styles.scenarioButton}
         >
           Add
@@ -298,7 +297,7 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
               type="primary"
               onClick={() => {
                 setDeleteScenarioModalVisible(false);
-                handleAskToRemoveOperations();
+                deleteScenario(scenario.id);
               }}
             >
               Delete
@@ -306,43 +305,6 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
           ]}
         >
           Are you sure you want to delete this <b>scenario</b>?
-        </Modal>
-        <Modal
-          open={clearAloneOpsModalVisible}
-          onCancel={() => setClearAloneOpsModalVisible(false)}
-          footer={[
-            <Button
-              key="cancel"
-              type="default"
-              onClick={() => setClearAloneOpsModalVisible(false)}
-            >
-              Cancel
-            </Button>,
-            <Button
-              key="keep"
-              type="primary"
-              onClick={() => {
-                deleteScenario(scenario.id, false);
-                setClearAloneOpsModalVisible(false);
-              }}
-            >
-              Keep
-            </Button>,
-            <Button
-              key="delete"
-              type="primary"
-              onClick={() => {
-                deleteScenario(scenario.id, true);
-                setClearAloneOpsModalVisible(false);
-              }}
-            >
-              Delete
-            </Button>,
-          ]}
-        >
-          This scenario contains single copies of operations.
-          <br />
-          Choose to <b>keep</b> them or <b>delete</b> them.
         </Modal>
       </div>
     </>

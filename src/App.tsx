@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import shallow from 'zustand/shallow';
 
@@ -9,26 +9,30 @@ import { RootStore, useStore } from 'store';
 import { EDroppableId, EDroppableType } from './types';
 import { getDraggableItemIdParts } from 'utils';
 
-import { message } from 'antd';
+import { Button, message, Modal } from 'antd';
 
 import styles from './App.module.css';
 
 export const App = () => {
+  const [createNodeModalVisible, setCreateNodeModalVisible] =
+    useState<boolean>(false);
+  const [createNodeCb, setCreateNodeCb] = useState<(() => void) | null>(null);
+
   const [
     scenarios,
     displayedScenariosIds,
     toggleDisplayScenario,
     moveScenario,
-    moveOperation,
-    copyOperation,
+    reorderNode,
+    applyOperationAsNode,
   ] = useStore(
     (store: RootStore) => [
       store.scenarios,
       store.displayedScenariosIds,
       store.toggleDisplayScenario,
       store.moveScenario,
-      store.moveOperation,
-      store.copyOperation,
+      store.reorderNode,
+      store.applyOperationAsNode,
     ],
     shallow
   );
@@ -50,17 +54,6 @@ export const App = () => {
 
         if (!displayedScenariosIds.includes(id)) {
           toggleDisplayScenario(id, dropOrder);
-        } else {
-          const currentOrder = scenarios[id].order;
-
-          if (dropOrder === currentOrder || dropOrder - 1 === currentOrder)
-            return;
-
-          if (dropOrder < currentOrder) {
-            moveScenario(currentOrder, dropOrder);
-          } else {
-            moveScenario(currentOrder, dropOrder - 1);
-          }
         }
 
         return;
@@ -80,19 +73,26 @@ export const App = () => {
       case type === EDroppableType.OPERATION &&
         sourceDroppableId === destDroppableId: {
         if (dragOrder !== dropOrder)
-          moveOperation(sourceDroppableId, dragOrder, dropOrder);
+          reorderNode(sourceDroppableId, dragOrder, dropOrder);
 
         return;
       }
 
       case type === EDroppableType.OPERATION &&
-        sourceDroppableId !== destDroppableId: {
-        const opId = draggableId.split(';').pop() as string;
+        sourceDroppableId !== destDroppableId:
+      case type === EDroppableType.OPERATION &&
+        sourceDroppableId === EDroppableId.OPERATION_LIST: {
+        const { draggableId: opId } = getDraggableItemIdParts(draggableId);
 
-        if (scenarios[destDroppableId]?.operations.includes(opId)) {
+        if (
+          scenarios[destDroppableId]?.nodes.find((node) => node.opId === opId)
+        ) {
           message.error('This operation is already in the scenario');
         } else {
-          copyOperation(destDroppableId, opId, dropOrder);
+          setCreateNodeModalVisible(true);
+          setCreateNodeCb(
+            () => () => applyOperationAsNode(destDroppableId, opId, dropOrder)
+          );
         }
 
         return;
@@ -108,6 +108,38 @@ export const App = () => {
           <Menu />
           <ScenariosList />
         </div>
+        <Modal
+          open={createNodeModalVisible}
+          onCancel={() => {
+            setCreateNodeModalVisible(false);
+            setCreateNodeCb(null);
+          }}
+          footer={[
+            <Button
+              key="cancel"
+              type="default"
+              onClick={() => {
+                setCreateNodeModalVisible(false);
+                setCreateNodeCb(null);
+              }}
+            >
+              Cancel
+            </Button>,
+            <Button
+              key="create"
+              type="primary"
+              onClick={() => {
+                createNodeCb && createNodeCb();
+                setCreateNodeModalVisible(false);
+                setCreateNodeCb(null);
+              }}
+            >
+              Create
+            </Button>,
+          ]}
+        >
+          Do you want to create an instance of operation in this scenario?
+        </Modal>
       </div>
     </DragDropContext>
   );

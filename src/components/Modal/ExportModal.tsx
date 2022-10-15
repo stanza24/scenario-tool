@@ -46,8 +46,8 @@ export const ExportModal = ({ visible, onClose }: Props) => {
     () =>
       Object.values(scenarios).map((scenario) => ({
         key: scenario.id,
-        name: scenario.name || 'Scenario',
-        opsNumber: scenario.operations.length,
+        name: scenario.name || '-',
+        opsNumber: scenario.nodes.length,
       })),
     [scenarios]
   );
@@ -61,7 +61,7 @@ export const ExportModal = ({ visible, onClose }: Props) => {
 
     const exportingOperations: Record<string, IOperation> = {};
     exportingScenarios.forEach((scenario) => {
-      scenario.operations.forEach((opId) => {
+      scenario.nodes.forEach(({ opId }) => {
         if (!exportingOperations[opId])
           exportingOperations[opId] = operations[opId];
       });
@@ -92,7 +92,7 @@ export const ExportModal = ({ visible, onClose }: Props) => {
 
     const exportingOperations: Record<string, IOperation> = {};
     exportingScenarios.forEach((scenario) => {
-      scenario.operations.forEach((opId) => {
+      scenario.nodes.forEach(({ opId }) => {
         if (!exportingOperations[opId])
           exportingOperations[opId] = operations[opId];
       });

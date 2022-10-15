@@ -1,26 +1,28 @@
+import { ReactNode } from 'react';
 import { DraggableProvidedDragHandleProps } from 'react-beautiful-dnd';
 
 import { HolderOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 
-import styles from './ScenarioListItem.module.css';
+import styles from './ScenarioMenuItem.module.css';
 
 interface Props {
-  name?: string;
+  name: string | ReactNode;
   dragHandleProps?: DraggableProvidedDragHandleProps;
 }
 
-export const ScenarioListItem = ({
-  name = 'Operation',
-  dragHandleProps,
-}: Props) => (
+export const ScenarioMenuItem = ({ name, dragHandleProps }: Props) => (
   <div className={styles.item}>
     <HolderOutlined
       {...(dragHandleProps || {})}
       className={styles.dragButton}
     />
-    <Typography.Text strong className={styles.name}>
-      {name}
-    </Typography.Text>
+    {typeof name === 'string' ? (
+      <Typography.Text strong className={styles.name}>
+        {name}
+      </Typography.Text>
+    ) : (
+      name
+    )}
   </div>
 );

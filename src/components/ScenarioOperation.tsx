@@ -1,7 +1,12 @@
 import { ChangeEvent, useState } from 'react';
 import { DraggableProvidedDragHandleProps } from 'react-beautiful-dnd';
 
-import { ERateType, IOperation, IOperationWithResult } from 'types';
+import {
+  ERateType,
+  IOperation,
+  IOperationWithResult,
+  IScenarioNode,
+} from 'types';
 
 import {
   ArrowRightOutlined,
@@ -14,16 +19,20 @@ import styles from './ScenarioOperation.module.css';
 
 interface Props {
   operation: IOperationWithResult;
+  dragging: boolean;
   deleteOperation: (operationId: string) => void;
   updateOperation: (operation: IOperation) => void;
+  updateNode: (node: IScenarioNode) => void;
   init?: string;
   dragHandleProps?: DraggableProvidedDragHandleProps;
 }
 
 export const ScenarioOperation = ({
   operation: { result, ...rawOperation },
+  dragging,
   deleteOperation,
   updateOperation,
+  updateNode,
   dragHandleProps,
 }: Props) => {
   const [deleteOperationModalVisible, setDeleteOperationModalVisible] =
@@ -36,8 +45,8 @@ export const ScenarioOperation = ({
     });
 
   const handleChangeRateType = (rateType: ERateType) => {
-    updateOperation({
-      ...rawOperation,
+    updateNode({
+      opId: rawOperation.id,
       rateType,
     });
   };
@@ -62,8 +71,8 @@ export const ScenarioOperation = ({
     switch (rawOperation.rateType) {
       case ERateType.MUL:
       case ERateType.DIV:
-      case ERateType.ADD_RAW:
-      case ERateType.SUB_RAW:
+      case ERateType.ADD:
+      case ERateType.SUB:
         return 'Enter value';
       case ERateType.ADD_PERC:
       case ERateType.SUB_PERC:
@@ -77,8 +86,8 @@ export const ScenarioOperation = ({
       case ERateType.MUL:
       case ERateType.DIV:
         return '0.001';
-      case ERateType.ADD_RAW:
-      case ERateType.SUB_RAW:
+      case ERateType.ADD:
+      case ERateType.SUB:
       case ERateType.ADD_PERC:
       case ERateType.SUB_PERC:
         return '0.01';
@@ -107,12 +116,12 @@ export const ScenarioOperation = ({
             ellipsis={{
               rows: 1,
               expandable: false,
-              tooltip: rawOperation.name || 'Operation',
+              tooltip: rawOperation.name || '-',
             }}
             level={5}
             className={styles.operationName}
           >
-            {rawOperation.name || 'Operation'}
+            {rawOperation.name || '-'}
           </Typography.Title>
           <Input.Group compact className={styles.rateInputGroup}>
             <Select
@@ -121,8 +130,8 @@ export const ScenarioOperation = ({
             >
               <Select.Option value={ERateType.MUL}>x</Select.Option>
               <Select.Option value={ERateType.DIV}>/</Select.Option>
-              <Select.Option value={ERateType.ADD_RAW}>+N</Select.Option>
-              <Select.Option value={ERateType.SUB_RAW}>-N</Select.Option>
+              <Select.Option value={ERateType.ADD}>+N</Select.Option>
+              <Select.Option value={ERateType.SUB}>-N</Select.Option>
               <Select.Option value={ERateType.ADD_PERC}>+%</Select.Option>
               <Select.Option value={ERateType.SUB_PERC}>-%</Select.Option>
             </Select>
@@ -166,7 +175,7 @@ export const ScenarioOperation = ({
           from scenario?
         </Modal>
       </div>
-      <ArrowRightOutlined className={styles.operationIcon} />
+      {!dragging && <ArrowRightOutlined className={styles.operationIcon} />}
     </div>
   );
 };

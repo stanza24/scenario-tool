@@ -1,10 +1,8 @@
-import EventEmitter from 'eventemitter3';
 import React, { useMemo } from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import shallow from 'zustand/shallow';
 
 import { Scenario } from './Scenario';
-import { ScenarioTableDroppableController } from './ScenarioTableDroppableController';
 import { RootStore, useStore } from 'store';
 import { EDroppableId, EDroppableType, IScenario } from 'types';
 
@@ -13,14 +11,6 @@ import { Button } from 'antd';
 import scenarioStyles from './Scenario.module.css';
 import styles from './ScenariosList.module.css';
 import classNames from 'classnames';
-
-export enum ScenarioTableEvents {
-  MENU_ITEM_DRAGGING_OVER = 'MENU_ITEM_DRAGGING_OVER',
-  MENU_ITEM_DRAGGING_CLEAR = 'MENU_ITEM_DRAGGING_CLEAR',
-}
-
-export const scenarioTableEventEmitter =
-  new EventEmitter<ScenarioTableEvents>();
 
 export const ScenariosList = () => {
   const [
@@ -70,7 +60,6 @@ export const ScenariosList = () => {
             className={styles.scenariosList}
             style={getListStyle(droppableSnapshot.isDraggingOver)}
           >
-            <ScenarioTableDroppableController snapshot={droppableSnapshot} />
             {sortedDisplayedScenarios.map(
               (scenario: IScenario, index: number) => (
                 <Draggable

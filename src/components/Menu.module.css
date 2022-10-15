@@ -1,0 +1,35 @@
+.collapse {
+    width: 250px;
+    margin-top: 10px !important;
+    margin-right: 10px !important;
+    height: fit-content;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.treeHeader {
+    padding: 10px;
+}
+
+.tree {
+    background-color: transparent;
+}
+
+.operationColorIcon {
+    margin-right: 4px;
+}
+
+.dragButton {
+    margin-right: 4px;
+    cursor: move !important;
+    cursor: grab !important;
+}
+
+.scenarioDraggingContainer .dragButton, .operationDraggingContainer .dragButton {
+    cursor: grabbing;
+}
+
+.dragButtonStub {
+    display: inline-block;
+    width: 18px;
+}
