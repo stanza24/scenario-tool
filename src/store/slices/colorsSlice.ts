@@ -6,7 +6,7 @@ import { OP_COLORS } from 'const';
 export interface ColorsSlice {
   colors: Record<string, boolean>;
   getFreeColor: () => string | undefined;
-  releaseColor: (color: string) => void;
+  releaseColor: (color: string, draft?: RootStore) => void;
 }
 
 export const createColorsSlice = (
@@ -21,9 +21,9 @@ export const createColorsSlice = (
       }
     }
   },
-  releaseColor: (color: string) => {
+  releaseColor: (color: string, draft?: RootStore) => {
     set((state) => {
-      state.colors[color] = true;
+      (draft || state).colors[color] = true;
     });
   },
 });

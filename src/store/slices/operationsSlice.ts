@@ -60,20 +60,16 @@ export const createOperationsSlice = (
 
     set((state) => {
       state.scenarios[scenarioId].nodes.splice(opIndex, 1);
-    });
 
-    const op = get().operations[operationId];
+      const op = state.operations[operationId];
 
-    if (op.usage === 2 && op.color) {
-      get().releaseColor(op.color);
+      if (op.usage === 2 && op.color) {
+        state.releaseColor(op.color, state);
 
-      set((state) => {
         state.operations[operationId].color = null;
-      });
-    }
+      }
 
-    set((state) => {
-      state.operations[operationId].usage = op.usage - 1;
+      op.usage = op.usage - 1;
     });
   },
   reorderNode: (scenarioId: string, fromIndex: number, toIndex: number) => {

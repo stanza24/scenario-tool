@@ -89,17 +89,14 @@ export const createScenariosSlice = (
   },
   deleteScenario: (scenarioId: string) => {
     get().scenarios[scenarioId].nodes.forEach((node) => {
-      const op = get().operations[node.opId];
-
-      if (op.usage === 2 && op.color) {
-        get().releaseColor(op.color);
-
-        set((state) => {
-          state.operations[node.opId].color = null;
-        });
-      }
-
       set((state) => {
+        const op = state.operations[node.opId];
+
+        if (op.usage === 2 && op.color) {
+          state.releaseColor(op.color, state);
+          state.operations[node.opId].color = null;
+        }
+
         state.operations[node.opId].usage = op.usage - 1;
       });
     });
