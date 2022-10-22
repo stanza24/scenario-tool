@@ -1,4 +1,10 @@
 .header {
     padding-bottom: 10px;
     border-bottom: 2px solid black;
+    display: flex;
+    justify-content: space-between;
+}
+
+.refreshIcon {
+    margin-right: 8px;
 }

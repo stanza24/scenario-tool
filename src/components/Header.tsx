@@ -3,13 +3,19 @@ import shallow from 'zustand/shallow';
 
 import { ExportModal } from './Modal/ExportModal';
 import { ImportModal } from './Modal/ImportModal';
+import { useRefreshTimer } from 'hooks';
 import { useStore } from '../store';
 
-import { Button, Modal, Space } from 'antd';
+import { LoadingOutlined, SyncOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Menu, Modal, Space } from 'antd';
 
 import styles from './Header.module.css';
 
+type TRefreshType = 'hand' | '5_sec' | '15_sec' | '30_sec';
+
 export const Header = () => {
+  const [refreshType, setRefreshType] = useState<TRefreshType>('hand');
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [clearAllModalVisible, setClearAllModalVisible] =
     useState<boolean>(false);
   const [importModalVisible, setImportModalVisible] = useState<boolean>(false);
@@ -30,6 +36,51 @@ export const Header = () => {
     []
   );
 
+  const handleUpdateRates = useCallback(() => {
+    // TODO Прикрутить обновление рейтов
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1500);
+  }, []);
+
+  const handleGetDelay = useCallback(() => {
+    switch (refreshType) {
+      case '5_sec':
+        return 5000;
+      case '15_sec':
+        return 15000;
+      case '30_sec':
+        return 300000;
+      case 'hand':
+      default:
+        return null;
+    }
+  }, [refreshType]);
+
+  useRefreshTimer(handleUpdateRates, handleGetDelay);
+
+  const getRefreshButtonText = () => (
+    <span>
+      {refreshing ? (
+        <LoadingOutlined className={styles.refreshIcon} />
+      ) : (
+        <SyncOutlined className={styles.refreshIcon} />
+      )}
+      {(() => {
+        switch (refreshType) {
+          case '5_sec':
+            return '5 seconds';
+          case '15_sec':
+            return '15 seconds';
+          case '30_sec':
+            return '30 seconds';
+          case 'hand':
+          default:
+            return 'Refresh';
+        }
+      })()}
+    </span>
+  );
+
   return (
     <div className={styles.header}>
       <Space>
@@ -47,6 +98,37 @@ export const Header = () => {
           Export
         </Button>
       </Space>
+      <Dropdown.Button
+        trigger={['click']}
+        overlay={
+          <Menu
+            activeKey={refreshType}
+            onClick={({ key }) => setRefreshType(key as TRefreshType)}
+            items={[
+              {
+                label: 'By hand',
+                key: 'hand',
+              },
+              {
+                label: 'Every 5 seconds',
+                key: '5_sec',
+              },
+              {
+                label: 'Every 15 seconds',
+                key: '15_sec',
+              },
+              {
+                label: 'Every 30 seconds',
+                key: '30_sec',
+              },
+            ]}
+          />
+        }
+        placement="bottomLeft"
+        onClick={handleUpdateRates}
+      >
+        {getRefreshButtonText()}
+      </Dropdown.Button>
       <ImportModal
         visible={importModalVisible}
         onClose={handleCloseImportModal}
