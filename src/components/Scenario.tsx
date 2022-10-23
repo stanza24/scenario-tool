@@ -7,6 +7,7 @@ import {
 import shallow from 'zustand/shallow';
 
 import { ScenarioOperation } from './ScenarioOperation';
+import { translate } from 'translation/i18next';
 import { RootStore, useStore } from 'store';
 import {
   EDroppableType,
@@ -157,10 +158,13 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
       const lastOperationResult =
         operationsWithResult.at(-1)?.result || +scenario.init;
 
-      return `Spread: ${Math.round(lastOperationResult - +scenario.init)} / ${(
-        ((lastOperationResult - +scenario.init || 0) * 100) /
-        +scenario.init
-      ).toFixed(2)}%`;
+      return translate('Components.Scenario.spreadInfo', {
+        raw: Math.round(lastOperationResult - +scenario.init),
+        percent: (
+          ((lastOperationResult - +scenario.init || 0) * 100) /
+          +scenario.init
+        ).toFixed(2),
+      });
     }
 
     return null;
@@ -211,7 +215,7 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
         <Input
           type="number"
           step="0.01"
-          placeholder="Enter input value"
+          placeholder={translate('Components.Scenario.initPlaceholder')}
           value={scenario.init!}
           onChange={handleChangeInit}
           onBlur={handleFixDecimals}
@@ -276,7 +280,7 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
           onClick={() => createOperation(scenario.id)}
           className={styles.scenarioButton}
         >
-          Add
+          {translate('Components.Scenario.createNode')}
         </Button>
         <Typography.Text strong className={styles.spreadContainer}>
           {renderSpread()}
@@ -290,7 +294,7 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
               type="default"
               onClick={() => setDeleteScenarioModalVisible(false)}
             >
-              Cancel
+              {translate('Actions.Cancel')}
             </Button>,
             <Button
               key="delete"
@@ -300,11 +304,11 @@ export const Scenario = ({ scenario, dragHandleProps, collapsed }: Props) => {
                 deleteScenario(scenario.id);
               }}
             >
-              Delete
+              {translate('Actions.Delete')}
             </Button>,
           ]}
         >
-          Are you sure you want to delete this <b>scenario</b>?
+          {translate('Modals.DeleteScenario.content')}
         </Modal>
       </div>
     </>

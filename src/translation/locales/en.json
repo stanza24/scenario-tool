@@ -1,0 +1,72 @@
+{
+  "Actions": {
+    "Cancel": "Cancel",
+    "Delete": "Delete",
+    "Select": "Select"
+  },
+  "Messages": {
+    "Copied": "Copied to clipboard",
+    "OpInScenarioAlready": "This operation is already in the scenario"
+  },
+  "Modals": {
+    "ClearAll": {
+      "clear": "Clear",
+      "content": "Are you sure you want to clear <b>everything</b>?"
+    },
+    "CreateNode": {
+      "content": "Do you want to create an instance of operation in this scenario?",
+      "submit": "Create"
+    },
+    "DeleteOperation": {
+      "content": "Are you sure you want to delete operation <b>{{opName}}</b> from scenario?"
+    },
+    "DeleteScenario": {
+      "content": "Are you sure you want to delete this <b>scenario</b>?"
+    },
+    "Export": {
+      "asJson": "As JSON",
+      "asText": "As text",
+      "header": "Choose scenarios for exporting"
+    },
+    "Import": {
+      "chooseFile": "Choose JSON file",
+      "import": "Import",
+      "importTextPlaceholder": "Input your scenario configuration",
+      "incorrectJSON": "Incorrect JSON",
+      "tabFromFile": "From file",
+      "tabFromText": "From text"
+    },
+    "MassDelete": {
+      "bothContent": "Do you want to <b>delete</b> selected elements?<br />All instances of deleting operations will be removed from remaining scenarios",
+      "operationsContent": "Do you want to <b>delete</b> selected operations?<br />All instances of deleting operations will be removed from scenarios",
+      "scenariosContent": "Do you want to <b>delete</b> selected scenarios?"
+    }
+  },
+  "Components": {
+    "Header": {
+      "clearAll": "Delete all",
+      "export": "Export",
+      "import": "Import"
+    },
+    "Main": {
+      "createNew": "Create scenario",
+      "refreshButtonDefault": "Refresh",
+      "refreshButtonSec": "{{seconds}} seconds",
+      "refreshOptionDefault": "No refresh",
+      "refreshOptionSec": "Every {{seconds}} seconds"
+    },
+    "Menu": {
+      "operationsSection": "Operations",
+      "scenariosSection": "Scenarios"
+    },
+    "Scenario": {
+      "createNode": "Create",
+      "initPlaceholder": "Enter initial sum",
+      "spreadInfo": "Spread: {{raw}} / {{percent}}%"
+    },
+    "ScenarioOperation": {
+      "ratePlaceholderPercent": "Enter percent",
+      "ratePlaceholderValue": "Enter value"
+    }
+  }
+}

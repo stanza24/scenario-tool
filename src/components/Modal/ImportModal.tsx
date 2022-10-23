@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 
 import { usePrev } from 'hooks';
+import { translate } from 'translation/i18next';
 import { RootStore, useStore } from 'store';
 
 import {
@@ -88,7 +89,7 @@ export const ImportModal = ({ visible, onClose }: Props) => {
       form.resetFields();
       setFile(null);
     }
-  }, [prevVisible, visible]);
+  }, [prevVisible, visible, form]);
 
   return (
     <Modal
@@ -97,7 +98,7 @@ export const ImportModal = ({ visible, onClose }: Props) => {
       onCancel={onClose}
       footer={[
         <Button key="cancel" type="default" onClick={onClose}>
-          Cancel
+          {translate('Actions.Cancel')}
         </Button>,
         <Button
           key="import"
@@ -105,7 +106,7 @@ export const ImportModal = ({ visible, onClose }: Props) => {
           disabled={importButtonDisabled}
           onClick={handleValidate}
         >
-          Import
+          {translate('Modals.Import.import')}
         </Button>,
       ]}
     >
@@ -118,7 +119,7 @@ export const ImportModal = ({ visible, onClose }: Props) => {
             label: (
               <span>
                 <FontSizeOutlined />
-                From text
+                {translate('Modals.Import.tabFromText')}
               </span>
             ),
             children: (
@@ -139,7 +140,9 @@ export const ImportModal = ({ visible, onClose }: Props) => {
                           JSON.parse(inputValue);
                           return Promise.resolve();
                         } catch (err) {
-                          return Promise.reject('Incorrect JSON');
+                          return Promise.reject(
+                            translate('Modals.Import.incorrectJSON')
+                          );
                         }
                       },
                     },
@@ -147,7 +150,9 @@ export const ImportModal = ({ visible, onClose }: Props) => {
                 >
                   <Input.TextArea
                     rows={5}
-                    placeholder="Input your scenario configuration"
+                    placeholder={translate(
+                      'Modals.Import.importTextPlaceholder'
+                    )}
                     value={inputValue}
                     onChange={handleChangeInputValue}
                   />
@@ -160,17 +165,20 @@ export const ImportModal = ({ visible, onClose }: Props) => {
             label: (
               <span>
                 <CopyOutlined />
-                From file
+                {translate('Modals.Import.tabFromFile')}
               </span>
             ),
             children: (
               <div>
                 <Upload
+                  accept="application/JSON"
                   fileList={file ? [file] : []}
                   beforeUpload={handleUploadJSON}
                   onRemove={() => setFile(null)}
                 >
-                  <Button icon={<UploadOutlined />}>Select JSON file</Button>
+                  <Button icon={<UploadOutlined />}>
+                    {translate('Modals.Import.chooseFile')}
+                  </Button>
                 </Upload>
               </div>
             ),

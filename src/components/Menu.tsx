@@ -10,6 +10,7 @@ import shallow from 'zustand/shallow';
 
 import { ScenarioMenuItem } from './ScenarioMenuItem';
 import { ScenarioOperation } from './ScenarioOperation';
+import { translate } from 'translation/i18next';
 import { RootStore, useStore } from 'store';
 import { EDroppableId, EDroppableType } from 'types';
 
@@ -44,28 +45,11 @@ const getDraggableStyle = (
 const getMassDeleteModalText = (deletingType: EDeletingType | null) => {
   switch (deletingType) {
     case EDeletingType.SCENARIOS:
-      return (
-        <span>
-          Do you want to <b>delete</b> selected scenarios?
-          <br />
-        </span>
-      );
+      return <span>{translate('Modals.MassDelete.scenariosContent')}</span>;
     case EDeletingType.OPERATIONS:
-      return (
-        <span>
-          Do you want to <b>delete</b> selected operations?
-          <br />
-          All linked nodes in scenarios will be also deleted.
-        </span>
-      );
+      return <span>{translate('Modals.MassDelete.operationsContent')}</span>;
     case EDeletingType.BOTH:
-      return (
-        <span>
-          Do you want to <b>delete</b> selected entities?
-          <br />
-          All linked nodes in remaining scenarios will be also deleted.
-        </span>
-      );
+      return <span>{translate('Modals.MassDelete.bothContent')}</span>;
   }
 };
 
@@ -119,7 +103,7 @@ export const Menu = () => {
             strong
             onClick={() => toggleExpandTreeItem('scenarios')}
           >
-            Scenarios
+            {translate('Components.Menu.scenariosSection')}
           </Typography.Text>
         ),
         icon: <BranchesOutlined />,
@@ -193,7 +177,7 @@ export const Menu = () => {
             strong
             onClick={() => toggleExpandTreeItem('operations')}
           >
-            Operations
+            {translate('Components.Menu.operationsSection')}
           </Typography.Text>
         ),
         icon: <InteractionOutlined />,
@@ -319,7 +303,7 @@ export const Menu = () => {
                 setTimeout(() => setSelecting(false));
               }}
             >
-              Cancel
+              {translate('Actions.Cancel')}
             </Button>
             <Button
               danger
@@ -328,7 +312,7 @@ export const Menu = () => {
               size="small"
               onClick={handleMassDeleting}
             >
-              Delete
+              {translate('Actions.Delete')}
             </Button>
           </Space>
         ) : (
@@ -340,7 +324,7 @@ export const Menu = () => {
               setExpandedKeys(['scenarios', 'operations']);
             }}
           >
-            Select
+            {translate('Actions.Select')}
           </Button>
         )}
       </div>
@@ -372,7 +356,7 @@ export const Menu = () => {
             type="default"
             onClick={() => setMassDeleteModalVisible(false)}
           >
-            Cancel
+            {translate('Actions.Cancel')}
           </Button>,
           <Button
             key="create"
@@ -382,7 +366,7 @@ export const Menu = () => {
               setMassDeleteModalVisible(false);
             }}
           >
-            Delete
+            {translate('Actions.Delete')}
           </Button>,
         ]}
       >

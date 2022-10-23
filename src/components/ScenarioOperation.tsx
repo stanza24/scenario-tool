@@ -16,6 +16,7 @@ import {
 import { Button, Input, Modal, Select, Typography } from 'antd';
 
 import styles from './ScenarioOperation.module.css';
+import { translate } from '../translation/i18next';
 
 interface Props {
   operation: IOperationWithResult;
@@ -67,16 +68,16 @@ export const ScenarioOperation = ({
     });
   };
 
-  const getRatePlaceholder = () => {
+  const getRatePlaceholder = (): string => {
     switch (rawOperation.rateType) {
       case ERateType.MUL:
       case ERateType.DIV:
       case ERateType.ADD:
       case ERateType.SUB:
-        return 'Enter value';
+        return translate('Components.ScenarioOperation.ratePlaceholderValue');
       case ERateType.ADD_PERC:
       case ERateType.SUB_PERC:
-        return 'Enter percent';
+        return translate('Components.ScenarioOperation.ratePlaceholderPercent');
     }
     return '';
   };
@@ -157,7 +158,7 @@ export const ScenarioOperation = ({
               type="default"
               onClick={() => setDeleteOperationModalVisible(false)}
             >
-              Cancel
+              {translate('Actions.Cancel')}
             </Button>,
             <Button
               key="delete"
@@ -167,12 +168,13 @@ export const ScenarioOperation = ({
                 deleteOperation(rawOperation.id);
               }}
             >
-              Delete
+              {translate('Actions.Delete')}
             </Button>,
           ]}
         >
-          Are you sure you want to delete operation <b>{rawOperation.name}</b>{' '}
-          from scenario?
+          {translate('Modals.DeleteOperation.content', {
+            opName: rawOperation.name,
+          })}
         </Modal>
       </div>
       {!dragging && <ArrowRightOutlined className={styles.operationIcon} />}

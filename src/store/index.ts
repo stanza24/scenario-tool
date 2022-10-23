@@ -11,12 +11,17 @@ import {
   OperationsSlice,
 } from './slices/operationsSlice';
 import { createScenariosSlice, ScenariosSlice } from './slices/scenariosSlice';
+import { UiSettingsSlice, uiSettingsSlice } from './slices/uiSettingsSlice';
 
-export type RootStore = ScenariosSlice & OperationsSlice & ColorsSlice;
+export type RootStore = UiSettingsSlice &
+  ScenariosSlice &
+  OperationsSlice &
+  ColorsSlice;
 
 export type StoreSet = (fn: (draft: WritableDraft<RootStore>) => void) => void;
 
 const store = (set: StoreSet, get: GetState<RootStore>) => ({
+  ...uiSettingsSlice(set, get),
   ...createScenariosSlice(set, get),
   ...createOperationsSlice(set, get),
   ...createColorsSlice(set, get),

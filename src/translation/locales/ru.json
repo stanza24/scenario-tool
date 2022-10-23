@@ -1,0 +1,72 @@
+{
+  "Actions": {
+    "Cancel": "Отмена",
+    "Delete": "Удалить",
+    "Select": "Выбрать"
+  },
+  "Messages": {
+    "Copied": "Скопировано",
+    "OpInScenarioAlready": "Эта операция уже в связке"
+  },
+  "Modals": {
+    "ClearAll": {
+      "clear": "Очистить",
+      "content": "Вы действительно хотите удалить <b>все данные</b>?"
+    },
+    "CreateNode": {
+      "content": "Вы действительно хотите создать экземпляр операции в этой связке?",
+      "submit": "Создать"
+    },
+    "DeleteOperation": {
+      "content": "Вы действительно хотите удалить экземпляр операции <b>{{opName}}</b> из связки?"
+    },
+    "DeleteScenario": {
+      "content": "Вы действительно хотите удалить эту <b>связку</b>?"
+    },
+    "Export": {
+      "asJson": "В JSON",
+      "asText": "Скопировать",
+      "header": "Выберите связки для экспорта"
+    },
+    "Import": {
+      "chooseFile": "Выберите JSON файл",
+      "import": "Импорт",
+      "importTextPlaceholder": "Введите свою конфигурацию",
+      "incorrectJSON": "Некорректный JSON",
+      "tabFromFile": "Файл",
+      "tabFromText": "Текст"
+    },
+    "MassDelete": {
+      "bothContent": "Вы действительно хотите <b>удалить</b> выбранные элементы?<br />Все экземпляры удаляемых операций будут удалены из оставшихся связок",
+      "operationsContent": "Вы действительно хотите <b>удалить</b> выбранные операции?<br />Все экземпляры удаляемых операций будут удалены из связок",
+      "scenariosContent": "Вы действительно хотите <b>удалить</b> выбранные связки?"
+    }
+  },
+  "Components": {
+    "Header": {
+      "clearAll": "Удалить всё",
+      "export": "Экспорт",
+      "import": "Импорт"
+    },
+    "Main": {
+      "createNew": "Создать связку",
+      "refreshButtonDefault": "Обновить",
+      "refreshButtonSec": "{{seconds}} секунд",
+      "refreshOptionDefault": "Не обновлять",
+      "refreshOptionSec": "Каждые {{seconds}} секунд"
+    },
+    "Menu": {
+      "operationsSection": "Операции",
+      "scenariosSection": "Связки"
+    },
+    "Scenario": {
+      "createNode": "Создать",
+      "initPlaceholder": "Введите входящюю сумму",
+      "spreadInfo": "Спред: {{raw}} / {{percent}}%"
+    },
+    "ScenarioOperation": {
+      "ratePlaceholderPercent": "Введите процент",
+      "ratePlaceholderValue": "Введите значение"
+    }
+  }
+}

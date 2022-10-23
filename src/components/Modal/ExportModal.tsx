@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import shallow from 'zustand/shallow';
 
 import { usePrev } from 'hooks';
+import { translate } from 'translation/i18next';
 import { RootStore, useStore } from 'store';
 import { IOperation } from 'types';
 
@@ -104,7 +105,7 @@ export const ExportModal = ({ visible, onClose }: Props) => {
     });
     window.navigator.clipboard.writeText(rawText);
 
-    message.success('Copied to clipboard');
+    message.success(translate('Messages.Copied'));
 
     onClose();
   };
@@ -122,7 +123,7 @@ export const ExportModal = ({ visible, onClose }: Props) => {
       onCancel={onClose}
       footer={[
         <Button key="cancel" type="default" onClick={onClose}>
-          Cancel
+          {translate('Actions.Cancel')}
         </Button>,
         <Button
           key="exportJSON"
@@ -130,7 +131,7 @@ export const ExportModal = ({ visible, onClose }: Props) => {
           disabled={selectedRows.length === 0}
           onClick={handleExportAsJSON}
         >
-          Export as JSON
+          {translate('Modals.Export.asJson')}
         </Button>,
         typeof window.navigator.clipboard.writeText !== 'undefined' ? (
           <Button
@@ -139,12 +140,14 @@ export const ExportModal = ({ visible, onClose }: Props) => {
             disabled={selectedRows.length === 0}
             onClick={handleImportAsText}
           >
-            Copy as text
+            {translate('Modals.Export.asText')}
           </Button>
         ) : null,
       ]}
     >
-      <Typography.Title level={5}>Select scenarios to export:</Typography.Title>
+      <Typography.Title level={5}>
+        {translate('Modals.Export.header')}
+      </Typography.Title>
       <Table
         rowSelection={{
           type: 'checkbox',

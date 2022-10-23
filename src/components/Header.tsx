@@ -3,26 +3,26 @@ import shallow from 'zustand/shallow';
 
 import { ExportModal } from './Modal/ExportModal';
 import { ImportModal } from './Modal/ImportModal';
-import { useRefreshTimer } from 'hooks';
+import { translate } from 'translation/i18next';
 import { useStore } from '../store';
 
-import { LoadingOutlined, SyncOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Menu, Modal, Space } from 'antd';
+import { Button, Modal, Select, Space } from 'antd';
 
 import styles from './Header.module.css';
 
-type TRefreshType = 'hand' | '5_sec' | '15_sec' | '30_sec';
-
 export const Header = () => {
-  const [refreshType, setRefreshType] = useState<TRefreshType>('hand');
-  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [clearAllModalVisible, setClearAllModalVisible] =
     useState<boolean>(false);
   const [importModalVisible, setImportModalVisible] = useState<boolean>(false);
   const [exportModalVisible, setExportModalVisible] = useState<boolean>(false);
 
-  const [scenarios, clearScenarios] = useStore(
-    (store) => [store.scenarios, store.clearScenarios],
+  const [language, setLanguage, scenarios, clearScenarios] = useStore(
+    (store) => [
+      store.language,
+      store.setLanguage,
+      store.scenarios,
+      store.clearScenarios,
+    ],
     shallow
   );
 
@@ -36,51 +36,6 @@ export const Header = () => {
     []
   );
 
-  const handleUpdateRates = useCallback(() => {
-    // TODO Прикрутить обновление рейтов
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1500);
-  }, []);
-
-  const handleGetDelay = useCallback(() => {
-    switch (refreshType) {
-      case '5_sec':
-        return 5000;
-      case '15_sec':
-        return 15000;
-      case '30_sec':
-        return 300000;
-      case 'hand':
-      default:
-        return null;
-    }
-  }, [refreshType]);
-
-  useRefreshTimer(handleUpdateRates, handleGetDelay);
-
-  const getRefreshButtonText = () => (
-    <span>
-      {refreshing ? (
-        <LoadingOutlined className={styles.refreshIcon} />
-      ) : (
-        <SyncOutlined className={styles.refreshIcon} />
-      )}
-      {(() => {
-        switch (refreshType) {
-          case '5_sec':
-            return '5 seconds';
-          case '15_sec':
-            return '15 seconds';
-          case '30_sec':
-            return '30 seconds';
-          case 'hand':
-          default:
-            return 'Refresh';
-        }
-      })()}
-    </span>
-  );
-
   return (
     <div className={styles.header}>
       <Space>
@@ -89,46 +44,24 @@ export const Header = () => {
           disabled={Object.keys(scenarios).length === 0}
           onClick={() => setClearAllModalVisible(true)}
         >
-          Clear all
+          {translate('Components.Header.clearAll')}
         </Button>
         <Button type="primary" onClick={() => setImportModalVisible(true)}>
-          Import
+          {translate('Components.Header.import')}
         </Button>
         <Button type="primary" onClick={() => setExportModalVisible(true)}>
-          Export
+          {translate('Components.Header.export')}
         </Button>
       </Space>
-      <Dropdown.Button
-        trigger={['click']}
-        overlay={
-          <Menu
-            activeKey={refreshType}
-            onClick={({ key }) => setRefreshType(key as TRefreshType)}
-            items={[
-              {
-                label: 'By hand',
-                key: 'hand',
-              },
-              {
-                label: 'Every 5 seconds',
-                key: '5_sec',
-              },
-              {
-                label: 'Every 15 seconds',
-                key: '15_sec',
-              },
-              {
-                label: 'Every 30 seconds',
-                key: '30_sec',
-              },
-            ]}
-          />
-        }
-        placement="bottomLeft"
-        onClick={handleUpdateRates}
+      <Select
+        value={language}
+        bordered={false}
+        placement="bottomRight"
+        onSelect={setLanguage}
       >
-        {getRefreshButtonText()}
-      </Dropdown.Button>
+        <Select.Option value="ru">Русский</Select.Option>
+        <Select.Option value="en">English</Select.Option>
+      </Select>
       <ImportModal
         visible={importModalVisible}
         onClose={handleCloseImportModal}
@@ -146,7 +79,7 @@ export const Header = () => {
             type="default"
             onClick={() => setClearAllModalVisible(false)}
           >
-            Cancel
+            {translate('Actions.Cancel')}
           </Button>,
           <Button
             key="delete"
@@ -156,11 +89,11 @@ export const Header = () => {
               clearScenarios();
             }}
           >
-            Clear
+            {translate('Modals.ClearAll.clear')}
           </Button>,
         ]}
       >
-        Are you sure you want to clear <b>everything</b>?
+        {translate('Modals.ClearAll.content')}
       </Modal>
     </div>
   );
