@@ -28,6 +28,7 @@ export class SmartTimer {
     this._delay = delay;
 
     if (delay) {
+      // TODO Подумать насчет того чтобы иммедиатли вызвать тут последний колбек
       this.start();
     } else {
       this.stop();

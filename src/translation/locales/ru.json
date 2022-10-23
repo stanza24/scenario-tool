@@ -6,7 +6,7 @@
   },
   "Messages": {
     "Copied": "Скопировано",
-    "OpInScenarioAlready": "Эта операция уже в связке"
+    "opInScenarioAlready": "Эта операция уже в связке"
   },
   "Modals": {
     "ClearAll": {

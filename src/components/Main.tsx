@@ -39,6 +39,7 @@ export const Main = () => {
     }
   }, [refreshType]);
 
+  /** Настраиваем таймер рефреша */
   useRefreshTimer(handleUpdateRates, handleGetDelay);
 
   const getRefreshButtonText = () => (

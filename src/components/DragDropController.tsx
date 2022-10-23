@@ -82,7 +82,7 @@ export const DragDropController = ({ children, onCreateOpInstance }: Props) => {
         if (
           scenarios[destDroppableId]?.nodes.find((node) => node.opId === opId)
         ) {
-          message.error(translate('Components.Messages.OpInScenarioAlready'));
+          message.error(translate('Messages.opInScenarioAlready'));
         } else {
           onCreateOpInstance(destDroppableId, opId, dropOrder);
         }

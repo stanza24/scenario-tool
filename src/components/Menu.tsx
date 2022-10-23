@@ -223,10 +223,14 @@ export const Menu = () => {
                                 {...draggableProvided.dragHandleProps}
                                 className={styles.dragButton}
                               />
-                              <ApiOutlined
-                                className={styles.operationColorIcon}
-                                style={{ color: operation.color || '#000000' }}
-                              />
+                              {operation.color && (
+                                <ApiOutlined
+                                  className={styles.operationColorIcon}
+                                  style={{
+                                    color: operation.color || '#000000',
+                                  }}
+                                />
+                              )}
                               {operation.name}
                             </Typography.Text>
                           )}

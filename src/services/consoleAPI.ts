@@ -6,5 +6,7 @@ const apiObject = {
   getStore,
 };
 
-//@ts-ignore
-window['debug'] = apiObject;
+if (process.env.NODE_ENV === 'development') {
+  //@ts-ignore
+  window['debug'] = apiObject;
+}

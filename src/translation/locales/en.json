@@ -6,7 +6,7 @@
   },
   "Messages": {
     "Copied": "Copied to clipboard",
-    "OpInScenarioAlready": "This operation is already in the scenario"
+    "opInScenarioAlready": "This operation is already in the scenario"
   },
   "Modals": {
     "ClearAll": {

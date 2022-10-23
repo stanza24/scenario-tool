@@ -4,7 +4,7 @@ import shallow from 'zustand/shallow';
 import { ExportModal } from './Modal/ExportModal';
 import { ImportModal } from './Modal/ImportModal';
 import { translate } from 'translation/i18next';
-import { useStore } from '../store';
+import { useStore } from 'store';
 
 import { Button, Modal, Select, Space } from 'antd';
 
